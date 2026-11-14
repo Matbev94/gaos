@@ -3,6 +3,26 @@
 <head>
 <title>GAOS × Hong Sheng · order</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥢</text></svg>">
+<script>
+// ---- talk to the Google Sheet backend without needing a Google sign-in
+var GAOS_API = 'https://script.google.com/macros/s/AKfycbwk4HZlQbxwYU3WNu1wwDxEtn1D7U0CbUXMHvCLPWvGWW2xL2hrdEsBr0ZAZHRlnpNPGw/exec';
+window.gaosApi = function(fn, args){
+  var ctl = ('AbortController' in window) ? new AbortController() : null;
+  var t = ctl ? setTimeout(function(){ ctl.abort(); }, 45000) : null;
+  // keep this request "simple" (no custom headers/options) so Google's reply isn't blocked
+  return fetch(GAOS_API, {
+    method: 'POST',
+    body: JSON.stringify({ fn: fn, args: args }),
+    signal: ctl ? ctl.signal : undefined
+  }).then(function(r){ return r.json(); }, function(){
+    throw new Error('Couldn\'t reach the order system. Check your internet connection and try again.');
+  }).then(function(j){
+    if (t) clearTimeout(t);
+    if (!j || !j.ok) throw new Error((j && j.error) || 'Something went wrong. Please try again.');
+    return j.result;
+  });
+};
+</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -192,6 +212,7 @@ function toast(msg){ var t = $('toast'); t.textContent = msg; t.classList.add('s
 
 function call(fn){
   var args = Array.prototype.slice.call(arguments, 1);
+  if (window.gaosApi) return window.gaosApi(fn, args);   // website hosted outside Google
   return new Promise(function(res, rej){
     var r = google.script.run.withSuccessHandler(res).withFailureHandler(function(e){ rej(e && e.message ? e : new Error(String(e))); });
     r[fn].apply(r, args);
@@ -604,28 +625,6 @@ $('orgBtn').addEventListener('click', function(){
 });
 
 boot();
-</script>
-
-<script>
-// ---- talk to the Google Sheet backend without needing a Google sign-in
-var GAOS_API = 'https://script.google.com/macros/s/AKfycbwk4HZlQbxwYU3WNu1wwDxEtn1D7U0CbUXMHvCLPWvGWW2xL2hrdEsBr0ZAZHRlnpNPGw/exec';
-function call(fn){
-  var args = Array.prototype.slice.call(arguments, 1);
-  var ctl = ('AbortController' in window) ? new AbortController() : null;
-  var t = ctl ? setTimeout(function(){ ctl.abort(); }, 45000) : null;
-  // keep this request "simple" (no custom headers/options) so Google's reply isn't blocked
-  return fetch(GAOS_API, {
-    method: 'POST',
-    body: JSON.stringify({ fn: fn, args: args }),
-    signal: ctl ? ctl.signal : undefined
-  }).then(function(r){ return r.json(); }, function(){
-    throw new Error('Couldn\'t reach the order system. Check your internet connection and try again.');
-  }).then(function(j){
-    if (t) clearTimeout(t);
-    if (!j || !j.ok) throw new Error((j && j.error) || 'Something went wrong. Please try again.');
-    return j.result;
-  });
-}
 </script>
 </body>
 </html>
