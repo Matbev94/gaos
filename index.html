@@ -12,12 +12,16 @@ window.gaosApi = function(fn, args){
   // keep this request "simple" (no custom headers/options) so Google's reply isn't blocked
   return fetch(GAOS_API, {
     method: 'POST',
-    body: JSON.stringify({ fn: fn, args: args }),
+    body: JSON.stringify({ fn: fn, args: args, code: (function(){ try { return localStorage.getItem('gaos_code') || ''; } catch(e) { return ''; } })() }),
     signal: ctl ? ctl.signal : undefined
   }).then(function(r){ return r.json(); }, function(){
     throw new Error('Couldn\'t reach the order system. Check your internet connection and try again.');
   }).then(function(j){
     if (t) clearTimeout(t);
+    if (j && (j.error === 'NEED_CODE' || j.error === 'WRONG_CODE')) {
+      if (window.onNeedCode) window.onNeedCode(j.error === 'WRONG_CODE');
+      var g = new Error('Please enter the group password.'); g.gate = true; throw g;
+    }
     if (!j || !j.ok) throw new Error((j && j.error) || 'Something went wrong. Please try again.');
     return j.result;
   });
@@ -155,6 +159,9 @@ window.gaosApi = function(fn, args){
   .spin{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--red);border-radius:50%;animation:sp 1s linear infinite;margin:0 auto 10px}
   @keyframes sp{to{transform:rotate(360deg)}}
   .closed{text-align:center;padding:40px 10px}
+  .gate{text-align:center;max-width:420px;margin:40px auto;padding:24px 18px}
+  .gate .big{font-size:42px}
+  .gate h2{font-family:Fraunces,Georgia,serif;margin:6px 0}
   .closed .big{font-size:48px}
   .orgbtn{position:absolute;top:12px;right:12px;z-index:2;width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.14);color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center;padding:0}
   .orgbtn:active{background:rgba(255,255,255,.3)}
@@ -240,6 +247,7 @@ function boot(){
     loadMine().then(render);
     render();
   }).catch(function(e){
+    if (e && e.gate) return;   // the password screen is showing
     $('app').innerHTML = '<div class="closed"><div class="big">😕</div><p>Couldn\'t load the menu.</p><p style="color:var(--muted)">' + esc(e.message) + '</p><button class="btn red" onclick="location.reload()">Try again</button></div>';
   });
 }
@@ -605,6 +613,25 @@ function refreshRows(id){
     var tmp = document.createElement('div'); tmp.innerHTML = itemHtml(byId(id), row.hasAttribute('data-recent')); var n = tmp.firstChild; row.parentNode.replaceChild(n, row); bindSteps(n);
   });
 }
+
+// ------------------------------------------------------------ group password (asked once per device)
+window.onNeedCode = function(wrong){
+  closeSheet(); $('bar').style.display = 'none'; D = null;
+  $('app').innerHTML = '<div class="card gate"><div class="big">🔒</div><h2>Members only</h2><p style="color:var(--muted);margin-top:0">Enter the GAOS group password to order. You only need to do this once on this device.</p>' +
+    '<input class="field" id="gcode" type="text" autocomplete="off" autocapitalize="none" placeholder="Group password">' +
+    '<div class="err" id="gerr" style="' + (wrong ? 'display:block' : '') + '">' + (wrong ? 'That password isn\'t right (it may have changed). Ask Matt for the current one.' : '') + '</div>' +
+    '<button class="btn red block" id="gGo" style="margin-top:12px">Continue</button></div>';
+  setTimeout(function(){ var g = $('gcode'); if (g) g.focus(); }, 100);
+  function go(){
+    var v = ($('gcode').value || '').trim(); if (!v) return;
+    try { localStorage.setItem('gaos_code', v); } catch(e) {}
+    $('gGo').disabled = true; $('gGo').textContent = 'Checking…';
+    $('app').innerHTML = '<div class="loading"><div class="spin"></div>Loading the menu…</div>';
+    boot();
+  }
+  $('gGo').addEventListener('click', go);
+  $('gcode').addEventListener('keydown', function(e){ if (e.key === 'Enter') go(); });
+};
 
 // ------------------------------------------------------------ organiser login
 $('orgBtn').addEventListener('click', function(){
