@@ -12,12 +12,16 @@ window.gaosApi = function(fn, args){
   // keep this request "simple" (no custom headers/options) so Google's reply isn't blocked
   return fetch(GAOS_API, {
     method: 'POST',
-    body: JSON.stringify({ fn: fn, args: args }),
+    body: JSON.stringify({ fn: fn, args: args, code: (function(){ try { return localStorage.getItem('gaos_code') || ''; } catch(e) { return ''; } })() }),
     signal: ctl ? ctl.signal : undefined
   }).then(function(r){ return r.json(); }, function(){
     throw new Error('Couldn\'t reach the order system. Check your internet connection and try again.');
   }).then(function(j){
     if (t) clearTimeout(t);
+    if (j && (j.error === 'NEED_CODE' || j.error === 'WRONG_CODE')) {
+      if (window.onNeedCode) window.onNeedCode(j.error === 'WRONG_CODE');
+      var g = new Error('Please enter the group password.'); g.gate = true; throw g;
+    }
     if (!j || !j.ok) throw new Error((j && j.error) || 'Something went wrong. Please try again.');
     return j.result;
   });
@@ -225,9 +229,12 @@ function render(){
   }
   h += '<div class="tabs"><button class="tab' + (tab === 'restaurant' ? ' on' : '') + '" onclick="tab=\'restaurant\';render()">🥡 Restaurant</button><button class="tab' + (tab === 'people' ? ' on' : '') + '" onclick="tab=\'people\';render()">👥 People</button><button class="tab' + (tab === 'owes' ? ' on' : '') + '" onclick="tab=\'owes\';render()">💰 Who owes</button></div>';
   h += '<div id="tabbody"></div>';
-  h += '<div class="card"><div class="lbl">Order page link (share this)</div><div class="sharelink" id="pub"></div><div class="row" style="margin-top:8px"><button class="btn ghost sm" onclick="copyText(pubUrl())">Copy link</button></div></div>';
+  h += '<div class="card"><div class="lbl">Order page link (share this)</div><div class="sharelink" id="pub"></div><div class="row" style="margin-top:8px"><button class="btn ghost sm" onclick="copyText(pubUrl())">Copy link</button>' + (DATA.accessCode ? '<button class="btn ghost sm" onclick="copyText(inviteText())">Copy link + password</button>' : '') + '</div></div>';
+  h += '<div class="card"><div class="lbl">Group password</div><div class="row"><input class="field grow" id="gcode" autocomplete="off" placeholder="No password (anyone with the link can order)"><button class="btn red sm" onclick="saveCode()">Save</button></div>' +
+    '<div class="muted" style="font-size:13px;margin-top:6px">' + (DATA.accessCode ? '🔒 On. Members enter it once per device. Change it to lock out anyone who shouldn\'t have it (everyone will be asked for the new one). Clear it and save to turn it off.' : '🔓 Off. Anyone with the link can see the menu and order.') + '</div></div>';
   $('app').innerHTML = h;
   $('pub').textContent = pubUrl();
+  $('gcode').value = DATA.accessCode || '';
   if (tab === 'restaurant') renderRestaurant(); else if (tab === 'people') renderPeople(); else renderOwes();
 }
 function pubUrl(){ return location.href.replace(/admin\.html.*$/, '').replace(/#.*$/, ''); }
@@ -391,6 +398,11 @@ function clearClaim(ids, btn){
   DATA.orders.forEach(function(o){ if (ids.indexOf(o.id) >= 0) o.claimed = ''; });
   render();
   call('adminClearClaim', PIN, ids).then(function(){ toast('Marked as not received'); }).catch(function(e){ toast(e.message); load(true); });
+}
+function inviteText(){ return 'Order your Chinese for GAOS here: ' + pubUrl() + '\nGroup password: ' + DATA.accessCode; }
+function saveCode(){
+  var v = ($('gcode').value || '').trim();
+  call('adminSetAccessCode', PIN, v).then(function(c){ DATA.accessCode = c; toast(c ? 'Group password saved' : 'Group password turned off'); render(); }).catch(function(e){ toast(e.message); });
 }
 function toggleOpen(){
   var e = evById(sel); var st = e.open ? 'closed' : 'open';
