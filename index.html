@@ -134,6 +134,11 @@ window.gaosApi = function(fn, args){
   .logo.rv{background:#0666eb}
   .logo.ot{background:#8a7a6c}
   .payopt b{display:block}
+  .pbadges{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+  .pb{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;border-radius:6px;padding:3px 7px;line-height:1.2;white-space:nowrap}
+  .pb-rv{background:#0666eb;color:#fff}
+  .pb-card{background:#f1ede7;color:#2a1d17;border:1px solid #ddd3c4}
+  .pb-ap{background:#000;color:#fff}
   .payopt small{color:var(--muted)}
 
   .howpay{background:#fff;border:1px dashed var(--gold);border-radius:12px;padding:12px;margin-top:10px}
@@ -491,9 +496,9 @@ function renderReview(open){
       '<button class="grpbtn' + (group === 'cast' ? ' on' : '') + '" data-g="cast"><span>🎭</span>Cast</button>' +
       '<button class="grpbtn' + (group === 'crew' ? ' on' : '') + '" data-g="crew"><span>🔧</span>Crew</button></div>';
   }
-  h += '<label class="lbl" style="margin-top:16px">How will you pay Matt?</label><div class="nocash"><b>💳 TWINT or Revolut only. No cash.</b><br>No TWINT or Revolut? Ask someone who has it to pay for you, choose <b>Someone else pays</b> and say who in the note.</div><div class="pay">' +
+  h += '<label class="lbl" style="margin-top:16px">How will you pay Matt?</label><div class="nocash"><b>💳 TWINT or Revolut only. No cash.</b><br>No TWINT? Choose <b>Revolut</b>: you can pay with any bank card or Apple Pay, no Revolut account needed.</div><div class="pay">' +
     payOpt('twint', 'tw', 'TWINT', 'TWINT', 'Send to ' + D.twint) +
-    payOpt('revolut', 'rv', 'Rev', 'Revolut', '@' + D.revolut) +
+    payOpt('revolut', 'rv', 'Rev', 'Revolut, card or Apple Pay', 'No Revolut account needed', payBadges()) +
     payOpt('other', 'ot', '👥', 'Someone else pays', 'Grouped with a friend\'s payment, say who in the note') + '</div>';
   h += '<div id="payInfo"></div>';
   h += '<label class="lbl" style="margin-top:16px" for="cmt">Note for Matt <span style="text-transform:none;font-weight:500">(e.g. “Sam is paying for me”, “no chili”)</span></label><textarea class="field" id="cmt" rows="2">' + esc(comment) + '</textarea>';
@@ -516,8 +521,13 @@ function renderReview(open){
   if (keep && $(keep)) $(keep).focus();
 }
 
-function payOpt(m, cls, logo, title, sub){
-  return '<button class="payopt" data-m="' + m + '"><span class="logo ' + cls + '">' + logo + '</span><span><b>' + title + '</b><small>' + esc(sub) + '</small></span></button>';
+function payOpt(m, cls, logo, title, sub, extra){
+  return '<button class="payopt" data-m="' + m + '"><span class="logo ' + cls + '">' + logo + '</span><span><b>' + title + '</b><small>' + esc(sub) + '</small>' + (extra || '') + '</span></button>';
+}
+// small payment badges (drawn here, no external images)
+function payBadges(){
+  var card = '<svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><rect x="0.5" y="0.5" width="15" height="11" rx="2" fill="#fff" stroke="#555"/><rect x="0.5" y="3" width="15" height="2.2" fill="#555"/><rect x="2.5" y="7.5" width="5" height="1.6" rx=".8" fill="#999"/></svg>';
+  return '<span class="pbadges"><span class="pb pb-rv">Revolut</span><span class="pb pb-card">' + card + ' Debit / credit card</span><span class="pb pb-ap">Apple&nbsp;Pay</span></span>';
 }
 function markPay(){
   Array.prototype.forEach.call(document.querySelectorAll('.payopt'), function(b){ b.classList.toggle('on', b.getAttribute('data-m') === payMethod); });
@@ -534,7 +544,7 @@ function payInfo(m, amount, name, now){
       '<ol style="margin:10px 0 0;padding-left:18px;color:var(--muted);font-size:13px"><li>Open TWINT → <b>Send</b></li><li>Paste or type the number above</li><li>Enter ' + chf(amount) + ' and <b>put your name in the message</b></li></ol>' + mustName(name) + '</div>';
   }
   if (m === 'revolut') {
-    return '<div class="howpay">' + when + '<div>Send <b>' + chf(amount) + '</b> to <b>@' + esc(D.revolut) + '</b> on Revolut.</div>' +
+    return '<div class="howpay">' + when + '<div>Pay <b>' + chf(amount) + '</b> to <b>@' + esc(D.revolut) + '</b> with Revolut, any debit or credit card, or Apple Pay. You don\'t need a Revolut account.</div>' + payBadges() + '<br>' +
       '<a class="revbtn" href="' + esc(revolutUrl(amount, name)) + '" target="_blank" rel="noopener">Pay ' + chf(amount) + ' on Revolut ↗</a>' +
       '<div style="color:var(--muted);font-size:12px;margin-top:6px">The amount' + (String(name || '').trim() ? ' and your name are' : ' is') + ' filled in for you. Check them before you send.</div>' +
       ' <button class="copy" onclick="copyText(\'' + amt + '\')">Copy amount</button>' + mustName(name) + '</div>';
