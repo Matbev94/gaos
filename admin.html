@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>GAOS orders · admin</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥢</text></svg>">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--red:#a3201b;--red-d:#7d1612;--gold:#d9a441;--cream:#fbf6ee;--ink:#2a1d17;--muted:#7a6a60;--line:#eadfce;--ok:#2f7d4f;--warn:#b26b00}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--cream);color:var(--ink);font:15px/1.4 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  button,select,input,textarea{font:inherit;color:inherit}
+  button{cursor:pointer}
+  .wrap{max-width:980px;margin:0 auto;padding:0 14px}
+  header{background:var(--ink);color:#fff;padding:14px 0}
+  header .wrap{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  #hbtns{flex-wrap:nowrap}
+  @media(max-width:480px){.brand{font-size:18px}}
+  .brand{font-family:Fraunces,Georgia,serif;font-weight:800;font-size:22px}
+  .brand span{color:var(--gold)}
+  .hbtn{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:9px;padding:7px 11px;font-weight:600;font-size:13px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin:14px 0}
+  .lbl{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px}
+  .field{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:11px;background:#fff;outline:none;font-size:16px}
+  .field:focus{border-color:var(--gold)}
+  .btn{border:0;border-radius:10px;padding:10px 14px;font-weight:700}
+  .btn.red{background:var(--red);color:#fff}.btn.gold{background:var(--gold);color:#3a2205}.btn.ghost{background:#f4ece0}
+  .btn.sm{padding:6px 10px;font-size:13px}
+  .btn:disabled{opacity:.5}
+  .login{max-width:360px;margin:60px auto;text-align:center}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .between{justify-content:space-between}
+  .grow{flex:1;min-width:0}
+
+  .evlist{display:flex;gap:8px;overflow-x:auto;padding:12px 0 4px;scrollbar-width:none}
+  .evlist::-webkit-scrollbar{display:none}
+  .ev{flex:0 0 auto;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:8px 12px;text-align:left;min-width:150px}
+  .ev.on{border-color:var(--red);box-shadow:0 0 0 2px rgba(163,32,27,.12)}
+  .ev b{display:block;font-size:14px}
+  .ev small{color:var(--muted);font-size:12px}
+  .st{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:2px 8px;text-transform:uppercase;letter-spacing:.04em}
+  .st.open{background:#e3f3e8;color:var(--ok)}.st.closed{background:#efe9e1;color:var(--muted)}
+  .st.owe{background:#fff1dc;color:var(--warn)}.st.paid{background:#e3f3e8;color:var(--ok)}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px}
+  .stat .k{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+  .stat .v{font-size:22px;font-weight:800;margin-top:2px}
+  .stat.hi{background:var(--red);color:#fff;border-color:var(--red)}.stat.hi .k{color:rgba(255,255,255,.8)}
+  .bar{height:6px;background:#efe6d8;border-radius:9px;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;background:var(--ok)}
+  @media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}.stat .v{font-size:19px}}
+
+  .tabs{display:flex;gap:4px;background:#efe6d8;border-radius:12px;padding:4px;margin:6px 0 12px}
+  .tab{flex:1;border:0;background:transparent;border-radius:9px;padding:9px 6px;font-weight:700;font-size:14px;color:var(--muted)}
+  .tab.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+  table{width:100%;border-collapse:collapse}
+  th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:left;padding:8px 6px;border-bottom:2px solid var(--line)}
+  td{padding:9px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+  td.n,th.n{text-align:right;white-space:nowrap}
+  td.id{font-weight:800;color:var(--red-d);white-space:nowrap}
+  td.qty{font-weight:800;font-size:18px;text-align:center}
+  tfoot td{font-weight:800;border-bottom:0;font-size:16px}
+
+  .person{background:#fff;border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden}
+  .person.paid{opacity:.72}
+  .phead{display:flex;align-items:center;gap:12px;padding:12px}
+  .chk{width:34px;height:34px;border-radius:10px;border:2px solid #cdbfa9;background:#fff;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff}
+  .chk.on{background:var(--ok);border-color:var(--ok)}
+  .chk.part{background:var(--gold);border-color:var(--gold);font-size:16px}
+  .pname{font-weight:800;font-size:16px}
+  .pmeta{color:var(--muted);font-size:12px}
+  .ptot{font-weight:800;font-size:17px;white-space:nowrap}
+  .pbody{border-top:1px dashed var(--line);padding:8px 12px 12px;font-size:14px}
+  .pline{display:flex;gap:8px;padding:3px 0}
+  .pline .q{font-weight:800;min-width:26px}
+  .pline .t{flex:1}
+  .note{background:#fff8ea;border-radius:8px;padding:6px 9px;margin-top:6px;font-size:13px}
+  .ordhdr{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;margin-top:8px}
+  .ordhdr:first-child{margin-top:0}
+  .link{background:none;border:0;color:var(--red);font-weight:700;font-size:12px;padding:2px 4px}
+  .pm{display:inline-block;font-size:11px;font-weight:800;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px}
+  .pm.twint{background:#111;color:#fff}.pm.revolut{background:#0666eb;color:#fff}.pm.other{background:#e8e0d5;color:var(--ink)}
+  .filters{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+  .fbtn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;font-weight:600;font-size:13px}
+  .fbtn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .muted{color:var(--muted)}
+  .empty{text-align:center;color:var(--muted);padding:30px 0}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 14px;border-radius:10px;font-weight:600;z-index:50;opacity:0;transition:opacity .2s;pointer-events:none}
+  .toast.show{opacity:1}
+  .modal-bg{position:fixed;inset:0;background:rgba(30,10,5,.45);z-index:40;display:none;align-items:flex-end;justify-content:center}
+  .modal{background:var(--cream);width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:90vh;overflow:auto}
+  @media(min-width:700px){.modal-bg{align-items:center}.modal{border-radius:18px}}
+  .modal h3{font-family:Fraunces,Georgia,serif;margin:0 0 12px;font-size:20px}
+  .err{color:#8b1c14;font-weight:600;margin-top:8px}
+  .gp{display:inline-block;font-size:11px;font-weight:800;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px}
+  .gp.cast{background:#f6e3f0;color:#7a1f5c}.gp.crew{background:#e2ecf8;color:#1f4a7a}
+  h4.gh{font-family:Fraunces,Georgia,serif;font-size:18px;margin:4px 4px 6px;display:flex;justify-content:space-between}
+  .seg{display:inline-flex;background:#efe6d8;border-radius:10px;padding:3px;margin-bottom:10px}
+  .seg button{border:0;background:transparent;border-radius:8px;padding:6px 12px;font-weight:700;font-size:13px;color:var(--muted)}
+  .seg button.on{background:#fff;color:var(--ink)}
+  .claims{border:2px solid #9bb8dd;background:#f3f7fd}
+  .claims .row.between{flex-wrap:nowrap}
+  .claim{padding:10px 0;border-top:1px solid #dbe5f2}
+  .claim:first-of-type{border-top:0}
+  .sharelink{background:#f7f1e7;border-radius:10px;padding:10px;font-size:13px;word-break:break-all}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="brand">GAOS <span>·</span> orders admin</div><div class="row" id="hbtns"></div></div></header>
+<main class="wrap" id="app"></main>
+<div class="modal-bg" id="mbg"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+var PIN = null, DATA = null, sel = null, tab = 'restaurant', rview = 'split', pfilter = 'all', showSettled = false, timer = null;
+var PS = 'gaos_admin_pin';
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function chf(n){ return 'CHF ' + Number(n || 0).toFixed(2); }
+function isNumId(id){ return /^\d+[A-Z]?$/.test(id); }
+function toast(m){ var t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(function(){ t.classList.remove('show'); }, 1800); }
+function call(fn){ var a = Array.prototype.slice.call(arguments, 1); return new Promise(function(res, rej){ var r = google.script.run.withSuccessHandler(res).withFailureHandler(function(e){ rej(e && e.message ? e : new Error(String(e))); }); r[fn].apply(r, a); }); }
+function ssGet(){ try { return sessionStorage.getItem(PS); } catch(e){ return null; } }
+function ssSet(v){ try { v ? sessionStorage.setItem(PS, v) : sessionStorage.removeItem(PS); } catch(e){} }
+function copyText(text){
+  function fb(){ var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); toast('Copied'); } catch(e){ toast('Could not copy'); } document.body.removeChild(ta); }
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function(){ toast('Copied'); }, fb); else fb();
+}
+function fmtDate(s){ var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s || ''); if (!m) return s || ''; return new Date(+m[1], +m[2]-1, +m[3]).toLocaleDateString('en-GB', {weekday:'short', day:'numeric', month:'short', year:'numeric'}); }
+function fmtTime(s){ if (!s) return ''; var d = new Date(s); return d.toLocaleString('en-GB', {weekday:'short', hour:'2-digit', minute:'2-digit'}); }
+function key(n){ return String(n).trim().toLowerCase().replace(/\s+/g, ' '); }
+
+// ---------------------------------------------------------------- login
+function showLogin(err){
+  $('hbtns').innerHTML = '';
+  $('app').innerHTML = '<div class="login card"><div style="font-size:40px">🔒</div><h2 style="font-family:Fraunces,serif;margin:6px 0 14px">Admin</h2>' +
+    '<input class="field" id="pin" type="password" placeholder="Password" autocomplete="current-password">' +
+    '<button class="btn red" style="width:100%;margin-top:10px" id="go">Unlock</button>' + (err ? '<div class="err">' + esc(err) + '</div>' : '') + '</div>';
+  $('pin').focus();
+  $('pin').addEventListener('keydown', function(e){ if (e.key === 'Enter') login(); });
+  $('go').addEventListener('click', login);
+}
+function login(){
+  var p = $('pin').value; $('go').disabled = true;
+  call('adminLogin', p).then(function(){ PIN = p; ssSet(p); load(); }).catch(function(e){ showLogin(e.message); });
+}
+function logout(){ PIN = null; ssSet(null); window.__GAOS_PIN = null; clearInterval(timer); toOrderPage(); }
+function toOrderPage(){ var a = document.createElement('a'); a.href = pubUrl(); a.target = '_top'; document.body.appendChild(a); a.click(); }
+
+// ---------------------------------------------------------------- data
+function load(quiet){
+  if (!quiet && !DATA) $('app').innerHTML = '<div class="empty">Loading…</div>';
+  return call('adminGetAll', PIN).then(function(d){
+    DATA = d;
+    if (!sel || !evById(sel)) sel = defaultEvening();
+    render();
+    if (!timer) timer = setInterval(function(){ if ($('mbg').style.display !== 'flex') load(true); }, 30000);
+  }).catch(function(e){ if (/password/i.test(e.message)) { ssSet(null); showLogin(e.message); } else toast(e.message); });
+}
+function evById(id){ for (var i = 0; i < DATA.evenings.length; i++) if (DATA.evenings[i].id === id) return DATA.evenings[i]; return null; }
+function ordersFor(id){ return DATA.orders.filter(function(o){ return o.eveningId === id; }); }
+function evStats(id){
+  var os = ordersFor(id), t = 0, p = 0, people = {}, g = { cast: 0, crew: 0, '': 0 };
+  os.forEach(function(o){ t += o.total; if (o.paid) p += o.total; people[key(o.name)] = 1; g[o.group || ''] += o.total; });
+  return { total: t, paid: p, owe: t - p, people: Object.keys(people).length, orders: os.length, cast: g.cast, crew: g.crew, none: g[''] };
+}
+function sortedEvenings(){
+  return DATA.evenings.slice().sort(function(a, b){ return String(b.date || b.created).localeCompare(String(a.date || a.created)); });
+}
+function visibleEvenings(){
+  return sortedEvenings().filter(function(e){ var s = evStats(e.id); return showSettled || e.open || s.owe > 0.004 || s.orders === 0 && e.id === sel; });
+}
+function defaultEvening(){ var v = visibleEvenings(); var open = v.filter(function(e){ return e.open; }); return (open[0] || v[0] || sortedEvenings()[0] || {}).id || null; }
+
+// ---------------------------------------------------------------- render
+function render(){
+  $('hbtns').innerHTML = '<button class="hbtn" onclick="load()">↻</button><button class="hbtn" onclick="logout()">🔒 Log out</button>';
+  var evs = visibleEvenings();
+  var h = '<div class="row between" style="margin-top:12px"><div class="lbl" style="margin:0">Evenings</div><div class="row">' +
+    '<label class="muted" style="font-size:13px"><input type="checkbox" ' + (showSettled ? 'checked' : '') + ' onchange="showSettled=this.checked;render()"> show fully-paid</label>' +
+    '<button class="btn gold sm" onclick="newEvening()">+ New evening</button></div></div>';
+  h += '<div class="evlist">' + (evs.length ? evs.map(function(e){
+    var s = evStats(e.id);
+    return '<button class="ev' + (e.id === sel ? ' on' : '') + '" onclick="sel=\'' + e.id + '\';render()"><b>' + esc(e.name) + '</b><small>' + esc(fmtDate(e.date) || 'no date') + '</small><div style="margin-top:4px"><span class="st ' + (e.open ? 'open' : 'closed') + '">' + (e.open ? 'open' : 'closed') + '</span> ' +
+      (s.orders ? (s.owe > 0.004 ? '<span class="st owe">' + chf(s.owe) + ' owed</span>' : '<span class="st paid">all paid</span>') : '') + '</div></button>';
+  }).join('') : '<div class="muted">No evenings with money outstanding. Tick “show fully-paid” to see older ones.</div>') + '</div>';
+
+  h += claimsHtml();
+  var oweAll = 0; DATA.orders.forEach(function(o){ if (!o.paid) oweAll += o.total; });
+  h += '<div class="muted" style="font-size:13px">Outstanding across all evenings: <b style="color:var(--ink)">' + chf(oweAll) + '</b> · <a href="#" onclick="tab=\'owes\';render();return false" style="color:var(--red)">see who owes</a></div>';
+
+  var e = evById(sel);
+  if (e) {
+    var s = evStats(e.id);
+    h += '<div class="card"><div><div style="font-family:Fraunces,serif;font-size:22px;font-weight:800">' + esc(e.name) + '</div><div class="muted">' + esc(fmtDate(e.date) || 'No date set') + ' · ' + s.people + ' people · ' + s.orders + ' orders' + (e.split ? ' · cast/crew split on' : '') + '</div>' + deadlineLine(e) + '</div>' +
+      '<div class="row" style="margin-top:10px"><button class="btn ' + (e.open ? 'ghost' : 'red') + ' sm" onclick="toggleOpen()">' + (e.open ? '⏸ Close ordering now' : '▶ Open ordering') + '</button>' +
+      '<button class="btn ghost sm" onclick="editEvening()">Edit</button><button class="btn ghost sm" onclick="addOrder()">+ Add order</button></div></div></div>';
+    var pct = s.total ? Math.round(s.paid / s.total * 100) : 0;
+    h += '<div class="stats"><div class="stat hi"><div class="k">Grand total</div><div class="v">' + chf(s.total) + '</div>' + (e.split ? '<div style="font-size:12px;opacity:.9;margin-top:4px">🎭 Cast ' + chf(s.cast) + ' · 🔧 Crew ' + chf(s.crew) + (s.none > 0.004 ? ' · ? ' + chf(s.none) : '') + '</div>' : '') + '</div>' +
+      '<div class="stat"><div class="k">Paid</div><div class="v" style="color:var(--ok)">' + chf(s.paid) + '</div><div class="bar"><i style="width:' + pct + '%"></i></div></div>' +
+      '<div class="stat"><div class="k">Outstanding</div><div class="v" style="color:' + (s.owe > 0.004 ? 'var(--warn)' : 'var(--ok)') + '">' + chf(s.owe) + '</div></div>' +
+      '<div class="stat"><div class="k">Items</div><div class="v">' + itemTotals(e.id).reduce(function(a, i){ return a + i.qty; }, 0) + '</div></div></div>';
+  }
+  h += '<div class="tabs"><button class="tab' + (tab === 'restaurant' ? ' on' : '') + '" onclick="tab=\'restaurant\';render()">🥡 Restaurant</button><button class="tab' + (tab === 'people' ? ' on' : '') + '" onclick="tab=\'people\';render()">👥 People</button><button class="tab' + (tab === 'owes' ? ' on' : '') + '" onclick="tab=\'owes\';render()">💰 Who owes</button></div>';
+  h += '<div id="tabbody"></div>';
+  h += '<div class="card"><div class="lbl">Order page link (share this)</div><div class="sharelink" id="pub"></div><div class="row" style="margin-top:8px"><button class="btn ghost sm" onclick="copyText(pubUrl())">Copy link</button></div></div>';
+  $('app').innerHTML = h;
+  $('pub').textContent = pubUrl();
+  if (tab === 'restaurant') renderRestaurant(); else if (tab === 'people') renderPeople(); else renderOwes();
+}
+function pubUrl(){ return location.href.replace(/admin\.html.*$/, '').replace(/#.*$/, ''); }
+
+function itemTotals(evId, grp){
+  var map = {}, order = {};
+  DATA.menu.forEach(function(m, i){ order[m.id] = i; });
+  ordersFor(evId).filter(function(o){ return grp === undefined || (o.group || '') === grp; }).forEach(function(o){ o.items.forEach(function(it){
+    if (!map[it.id]) map[it.id] = { id: it.id, name: it.name, qty: 0, price: it.price, total: 0 };
+    map[it.id].qty += it.qty; map[it.id].total += it.qty * it.price;
+  }); });
+  return Object.keys(map).map(function(k){ return map[k]; }).sort(function(a, b){
+    var x = order[a.id] === undefined ? 9999 : order[a.id], y = order[b.id] === undefined ? 9999 : order[b.id]; return x - y;
+  });
+}
+
+function groupsFor(evId){
+  // which tables to show: cast, crew, and "not assigned" only if it has orders
+  var gs = ['cast', 'crew'];
+  if (ordersFor(evId).some(function(o){ return !o.group; })) gs.push('');
+  return gs;
+}
+var GLABEL = { cast: '🎭 Cast order', crew: '🔧 Crew order', '': '❓ Not assigned' };
+function itemTable(list){
+  var tot = 0, n = 0;
+  var h = '<table><thead><tr><th>No.</th><th>Dish</th><th class="n" style="text-align:center">Qty</th><th class="n">Total</th></tr></thead><tbody>';
+  list.forEach(function(i){ tot += i.total; n += i.qty;
+    h += '<tr><td class="id">' + (isNumId(i.id) ? esc(i.id) : '–') + '</td><td>' + esc(i.name) + '</td><td class="qty">' + i.qty + '</td><td class="n">' + chf(i.total) + '</td></tr>';
+  });
+  return h + '</tbody><tfoot><tr><td></td><td>' + n + ' items</td><td></td><td class="n">' + chf(tot) + '</td></tr></tfoot></table>';
+}
+function renderRestaurant(){
+  if (!sel) { $('tabbody').innerHTML = '<div class="empty">Create an evening to start.</div>'; return; }
+  var e = evById(sel);
+  var all = itemTotals(sel);
+  if (!all.length) { $('tabbody').innerHTML = '<div class="empty">No orders yet.</div>'; return; }
+  var h = '';
+  var split = e.split && rview === 'split';
+  if (e.split) h += '<div class="seg"><button class="' + (rview === 'split' ? 'on' : '') + '" onclick="rview=\'split\';renderRestaurant()">Cast + Crew</button><button class="' + (rview === 'all' ? 'on' : '') + '" onclick="rview=\'all\';renderRestaurant()">Combined</button></div>';
+  if (split) {
+    groupsFor(sel).forEach(function(g){
+      var list = itemTotals(sel, g);
+      var sub = list.reduce(function(a, i){ return a + i.total; }, 0);
+      h += '<div class="card" style="padding:10px 10px 6px"><h4 class="gh"><span>' + GLABEL[g] + '</span><span>' + chf(sub) + '</span></h4>' +
+        (list.length ? itemTable(list) : '<div class="muted" style="padding:6px 4px 10px">Nothing yet.</div>') +
+        (g === '' ? '<div class="muted" style="font-size:12px;padding:6px 4px">Orders added without cast/crew. Edit them in People to assign.</div>' : '') + '</div>';
+    });
+  } else {
+    h += '<div class="card" style="padding:6px 10px">' + itemTable(all) + '</div>';
+  }
+  h += '<div class="row"><button class="btn red" onclick="copyText(restaurantText(' + split + '))">📋 Copy order for the restaurant</button></div>';
+  $('tabbody').innerHTML = h;
+}
+function restaurantText(split){
+  var e = evById(sel);
+  function lines(list){ return list.map(function(i){ return i.qty + ' × ' + (isNumId(i.id) ? 'n° ' + i.id + ' – ' : '') + i.name; }).join('\n'); }
+  function sum(list){ return list.reduce(function(a, i){ return a + i.total; }, 0); }
+  var head = 'Commande GAOS – ' + (e ? e.name + (e.date ? ' (' + fmtDate(e.date) + ')' : '') : '');
+  if (!split) { var l = itemTotals(sel); return head + '\n' + lines(l) + '\n\nTotal: ' + chf(sum(l)); }
+  var names = { cast: 'COMMANDE 1 – CAST', crew: 'COMMANDE 2 – CREW', '': 'COMMANDE 3' };
+  var parts = groupsFor(sel).map(function(g){ var l = itemTotals(sel, g); return l.length ? names[g] + '\n' + lines(l) + '\nSous-total: ' + chf(sum(l)) : ''; }).filter(Boolean);
+  return head + '\n(2 commandes séparées, livrées ensemble)\n\n' + parts.join('\n\n') + '\n\nTotal: ' + chf(sum(itemTotals(sel)));
+}
+
+function people(evId){
+  var map = {};
+  ordersFor(evId).forEach(function(o){
+    var k = key(o.name);
+    if (!map[k]) map[k] = { name: o.name, orders: [], total: 0, paidAmt: 0, claimed: false };
+    map[k].orders.push(o); map[k].total += o.total; if (o.paid) map[k].paidAmt += o.total; if (o.claimed && !o.paid) map[k].claimed = true;
+  });
+  return Object.keys(map).map(function(k){ var p = map[k]; p.state = p.paidAmt >= p.total - 0.004 ? 'paid' : (p.paidAmt > 0 ? 'part' : 'unpaid'); return p; })
+    .sort(function(a, b){ return a.name.localeCompare(b.name); });
+}
+
+function renderPeople(){
+  if (!sel) { $('tabbody').innerHTML = ''; return; }
+  var ps = people(sel);
+  function inG(p, g){ return p.orders.some(function(o){ return o.group === g; }); }
+  var counts = { claimed: ps.filter(function(p){ return p.claimed; }).length, all: ps.length, unpaid: ps.filter(function(p){ return p.state !== 'paid'; }).length, paid: ps.filter(function(p){ return p.state === 'paid'; }).length,
+    cast: ps.filter(function(p){ return inG(p, 'cast'); }).length, crew: ps.filter(function(p){ return inG(p, 'crew'); }).length };
+  var fl = ['all', 'unpaid', 'paid']; if (counts.claimed) fl.splice(1, 0, 'claimed'); if (evById(sel).split) fl = fl.concat(['cast', 'crew']);
+  var h = '<div class="filters">' + fl.map(function(f){ return '<button class="fbtn' + (pfilter === f ? ' on' : '') + '" onclick="pfilter=\'' + f + '\';renderPeople()">' + (f === 'claimed' ? '🔔 Says paid' : f[0].toUpperCase() + f.slice(1)) + ' (' + counts[f] + ')</button>'; }).join('') + '</div>';
+  var shown = ps.filter(function(p){ if (pfilter === 'all') return true; if (pfilter === 'claimed') return p.claimed; if (pfilter === 'cast' || pfilter === 'crew') return inG(p, pfilter); return pfilter === 'paid' ? p.state === 'paid' : p.state !== 'paid'; });
+  if (!shown.length) h += '<div class="empty">' + (ps.length ? 'Nobody here.' : 'No orders yet.') + '</div>';
+  shown.forEach(function(p, idx){
+    var ids = p.orders.map(function(o){ return o.id; });
+    var methods = {}, grps = {}; p.orders.forEach(function(o){ methods[o.payMethod] = 1; if (o.group) grps[o.group] = 1; });
+    h += '<div class="person ' + (p.state === 'paid' ? 'paid' : '') + '"><div class="phead">' +
+      '<button class="chk ' + (p.state === 'paid' ? 'on' : p.state === 'part' ? 'part' : '') + '" title="Mark paid" onclick=\'setPaid(' + JSON.stringify(ids) + ',' + (p.state !== 'paid') + ',this)\'>' + (p.state === 'paid' ? '✓' : p.state === 'part' ? '½' : '') + '</button>' +
+      '<div class="grow"><div class="pname">' + esc(p.name) + Object.keys(grps).map(function(g){ return '<span class="gp ' + g + '">' + (g === 'cast' ? 'CAST' : 'CREW') + '</span>'; }).join('') + Object.keys(methods).map(function(m){ return '<span class="pm ' + m + '">' + pmLabel(m) + '</span>'; }).join('') + '</div>' +
+      '<div class="pmeta">' + (p.state === 'paid' ? 'Paid' : p.state === 'part' ? 'Part paid · owes ' + chf(p.total - p.paidAmt) : 'Not paid') + (p.claimed ? ' · <b style="color:#1f4a7a">🔔 says they\'ve paid</b>' : '') + '</div></div>' +
+      '<div class="ptot">' + chf(p.total) + '</div></div><div class="pbody">';
+    p.orders.forEach(function(o){
+      if (p.orders.length > 1) h += '<div class="ordhdr"><span>Order ' + fmtTime(o.created) + ' · ' + chf(o.total) + (o.paid ? ' ✓' : '') + '</span></div>';
+      o.items.forEach(function(i){ h += '<div class="pline"><span class="q">' + i.qty + '×</span><span class="t">' + (isNumId(i.id) ? '<b>' + esc(i.id) + '</b> ' : '') + esc(i.name) + '</span><span>' + chf(i.qty * i.price) + '</span></div>'; });
+      if (o.comment) h += '<div class="note">💬 ' + esc(o.comment) + '</div>';
+      h += '<div class="ordhdr"><span>' + fmtTime(o.updated) + '</span><span><button class="link" onclick="editOrder(\'' + o.id + '\')">edit</button><button class="link" onclick="delOrder(\'' + o.id + '\')">delete</button></span></div>';
+    });
+    h += '</div></div>';
+  });
+  $('tabbody').innerHTML = h;
+}
+
+function renderOwes(){
+  var rows = [];
+  sortedEvenings().forEach(function(e){
+    people(e.id).forEach(function(p){ if (p.state !== 'paid') rows.push({ e: e, p: p }); });
+  });
+  if (!rows.length) { $('tabbody').innerHTML = '<div class="empty">🎉 Everyone has paid.</div>'; return; }
+  var byPerson = {};
+  rows.forEach(function(r){ var k = key(r.p.name); if (!byPerson[k]) byPerson[k] = { name: r.p.name, owe: 0, items: [] }; byPerson[k].owe += r.p.total - r.p.paidAmt; byPerson[k].items.push(r); });
+  var list = Object.keys(byPerson).map(function(k){ return byPerson[k]; }).sort(function(a, b){ return b.owe - a.owe; });
+  var h = '<div class="card" style="padding:6px 10px"><table><thead><tr><th>Person</th><th>Evening</th><th class="n">Owes</th><th></th></tr></thead><tbody>';
+  list.forEach(function(x){
+    x.items.forEach(function(r, i){
+      var ids = r.p.orders.filter(function(o){ return !o.paid; }).map(function(o){ return o.id; });
+      h += '<tr><td>' + (i === 0 ? '<b>' + esc(x.name) + '</b>' + (x.items.length > 1 ? '<div class="muted" style="font-size:12px">total ' + chf(x.owe) + '</div>' : '') : '') + '</td><td>' + esc(r.e.name) + '<div class="muted" style="font-size:12px">' + esc(fmtDate(r.e.date)) + '</div></td><td class="n"><b>' + chf(r.p.total - r.p.paidAmt) + '</b></td>' +
+        '<td class="n"><button class="btn ghost sm" onclick=\'setPaid(' + JSON.stringify(ids) + ',true,this)\'>Mark paid</button></td></tr>';
+    });
+  });
+  h += '</tbody></table></div>';
+  $('tabbody').innerHTML = h;
+}
+
+// ---------------------------------------------------------------- actions
+function setPaid(ids, paid, btn){
+  if (btn) btn.disabled = true;
+  DATA.orders.forEach(function(o){ if (ids.indexOf(o.id) >= 0) o.paid = paid; });
+  render();
+  call('adminSetPaid', PIN, ids, paid).then(function(){ toast(paid ? 'Marked paid ✓' : 'Marked unpaid'); }).catch(function(e){ toast(e.message); load(true); });
+}
+function deadlineLine(e){
+  if (!e.deadline) return '';
+  var past = Date.now() >= e.deadline;
+  var d = new Date(e.deadline).toLocaleString('en-GB', {weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+  return '<div style="margin-top:4px;font-weight:600;color:' + (past ? 'var(--muted)' : 'var(--warn)') + '">⏰ ' + (past ? 'Closed automatically ' + d : 'Orders close ' + d + ' (' + leftText(e.deadline) + ')') + '</div>';
+}
+function leftText(ms){ var m = Math.max(0, Math.round((ms - Date.now()) / 60000)), h = Math.floor(m / 60); return h >= 24 ? 'in ' + Math.round(h / 24) + ' days' : h ? 'in ' + h + 'h ' + (m % 60) + 'm' : 'in ' + m + ' min'; }
+function pmLabel(m){ return m === 'other' ? 'VIA FRIEND' : m.toUpperCase(); }
+function claimsHtml(){
+  // everyone (any evening) who says they've paid but isn't ticked off yet
+  var rows = [];
+  sortedEvenings().forEach(function(e){ people(e.id).forEach(function(p){ if (p.claimed) rows.push({ e: e, p: p }); }); });
+  if (!rows.length) return '';
+  var h = '<div class="card claims"><div class="row between"><b style="font-size:16px">🔔 ' + rows.length + (rows.length === 1 ? ' person says they\'ve' : ' people say they\'ve') + ' paid</b><span class="muted" style="font-size:12px">Check your TWINT / Revolut, then confirm</span></div>';
+  rows.forEach(function(r){
+    var os = r.p.orders.filter(function(o){ return o.claimed && !o.paid; });
+    var ids = os.map(function(o){ return o.id; });
+    var amt = os.reduce(function(a, o){ return a + o.total; }, 0);
+    var m = os[0].payMethod;
+    h += '<div class="claim"><div class="row between"><div><b>' + esc(r.p.name) + '</b> <span class="pm ' + m + '">' + pmLabel(m) + '</span></div><b style="white-space:nowrap;font-size:16px">' + chf(amt) + '</b></div>' +
+      '<div class="muted" style="font-size:12px;margin-top:2px">' + esc(r.e.name) + ' · said paid ' + fmtTime(os[0].claimed) + '</div>' +
+      '<div class="row" style="margin-top:8px"><button class="btn sm grow" style="background:var(--ok);color:#fff" onclick=\'setPaid(' + JSON.stringify(ids) + ',true,this)\'>✓ Confirm received</button>' +
+      '<button class="btn ghost sm" onclick=\'clearClaim(' + JSON.stringify(ids) + ',this)\'>Not received</button></div></div>';
+  });
+  return h + '</div>';
+}
+function clearClaim(ids, btn){
+  if (btn) btn.disabled = true;
+  DATA.orders.forEach(function(o){ if (ids.indexOf(o.id) >= 0) o.claimed = ''; });
+  render();
+  call('adminClearClaim', PIN, ids).then(function(){ toast('Marked as not received'); }).catch(function(e){ toast(e.message); load(true); });
+}
+function toggleOpen(){
+  var e = evById(sel); var st = e.open ? 'closed' : 'open';
+  call('adminUpdateEvening', PIN, sel, { status: st }).then(function(){ toast(st === 'open' ? 'Ordering open' : 'Ordering closed'); load(true); }).catch(function(x){ toast(x.message); });
+}
+function modal(html){ $('modal').innerHTML = html; $('mbg').style.display = 'flex'; }
+function closeModal(){ $('mbg').style.display = 'none'; }
+$('mbg').addEventListener('click', function(e){ if (e.target === $('mbg')) closeModal(); });
+
+function eveningForm(title, e, onSave){
+  modal('<h3>' + title + '</h3><label class="lbl">Name</label><input class="field" id="evn" placeholder="e.g. Chaplin – Saturday tech" value="' + esc(e ? e.name : '') + '">' +
+    '<label class="lbl" style="margin-top:10px">Date</label><input class="field" id="evd" type="date" value="' + esc(e ? e.date : '') + '">' +
+    '<label class="lbl" style="margin-top:10px">Orders close at <span style="text-transform:none;font-weight:500">(optional, shows a countdown)</span></label><div class="row"><input class="field grow" id="evdl" type="datetime-local" value="' + esc(e ? e.deadlineLocal : '') + '"><button class="btn ghost sm" type="button" onclick="$(\'evdl\').value=\'\'">No deadline</button></div>' +
+    '<label style="display:flex;gap:10px;align-items:center;margin-top:14px;font-weight:600"><input type="checkbox" id="evs" style="width:20px;height:20px" ' + (!e || e.split ? 'checked' : '') + '> Split into cast and crew orders</label>' +
+    '<div class="err" id="merr"></div><div class="row" style="margin-top:14px"><button class="btn red grow" id="evsave">Save</button><button class="btn ghost" onclick="closeModal()">Cancel</button></div>');
+  $('evn').focus();
+  $('evsave').onclick = function(){ var n = $('evn').value.trim(); if (!n) { $('merr').textContent = 'Give it a name.'; return; } this.disabled = true; onSave(n, $('evd').value, $('evs').checked, $('evdl').value).then(function(){ closeModal(); load(true); }).catch(function(x){ $('merr').textContent = x.message; }); };
+}
+function newEvening(){ eveningForm('New evening', null, function(n, d, sp, dl){ return call('adminCreateEvening', PIN, n, d, sp, dl).then(function(e){ sel = e.id; toast('Evening created, ordering is open'); }); }); }
+function editEvening(){ var e = evById(sel); eveningForm('Edit evening', e, function(n, d, sp, dl){ return call('adminUpdateEvening', PIN, sel, { name: n, date: d, split: sp, deadline: dl }); }); }
+
+function delOrder(id){
+  var o = DATA.orders.filter(function(x){ return x.id === id; })[0];
+  modal('<h3>Delete this order?</h3><p>' + esc(o.name) + ' · ' + chf(o.total) + '<br><span class="muted">' + o.items.map(function(i){ return i.qty + '× ' + i.name; }).join(', ') + '</span></p>' +
+    '<div class="row"><button class="btn red grow" id="dok">Delete</button><button class="btn ghost" onclick="closeModal()">Cancel</button></div>');
+  $('dok').onclick = function(){ this.disabled = true; call('adminDeleteOrder', PIN, id).then(function(){ closeModal(); toast('Deleted'); load(true); }).catch(function(x){ toast(x.message); }); };
+}
+
+// Add / edit an order on someone's behalf. Items typed like: 106x2, 57, 61 x1, Tsingtao
+function itemsToText(items){ return items.map(function(i){ return (isNumId(i.id) ? i.id : i.name) + (i.qty > 1 ? ' x' + i.qty : ''); }).join(', '); }
+function parseItems(txt){
+  var out = [], bad = [];
+  txt.split(/[,;\n]+/).forEach(function(part){
+    part = part.trim(); if (!part) return;
+    var m = /^(.*?)(?:\s*[x×*]\s*(\d+))?$/i.exec(part); var idTxt = m[1].trim(), q = +(m[2] || 1);
+    var m2 = /^(\d+)\s*[x×*]\s*(.+)$/i.exec(part); if (m2 && !findItem(idTxt)) { q = +m2[1]; idTxt = m2[2].trim(); }
+    var it = findItem(idTxt); if (!it) { bad.push(part); return; }
+    var ex = out.filter(function(o){ return o.id === it.id; })[0]; if (ex) ex.qty += q; else out.push({ id: it.id, qty: q });
+  });
+  return { items: out, bad: bad };
+}
+function findItem(s){ s = s.toLowerCase(); for (var i = 0; i < DATA.menu.length; i++) { var m = DATA.menu[i]; if (m.id.toLowerCase() === s || m.name.toLowerCase() === s) return m; } return null; }
+function orderForm(title, o){
+  modal('<h3>' + title + '</h3><label class="lbl">Name</label><input class="field" id="on" value="' + esc(o ? o.name : '') + '">' +
+    '<label class="lbl" style="margin-top:10px">Items <span style="text-transform:none;font-weight:500">(menu numbers, e.g. “57, 106 x2, Tsingtao”)</span></label><textarea class="field" id="oi" rows="3">' + esc(o ? itemsToText(o.items) : '') + '</textarea><div class="muted" id="oprev" style="font-size:13px;margin-top:6px"></div>' +
+    (evById(sel).split || (o && o.group) ? '<label class="lbl" style="margin-top:10px">Cast or crew</label><select class="field" id="og"><option value="cast">Cast</option><option value="crew">Crew</option><option value="">Not assigned</option></select>' : '') +
+    '<label class="lbl" style="margin-top:10px">Paying by</label><select class="field" id="opm"><option value="twint">TWINT</option><option value="revolut">Revolut</option><option value="other">Someone else pays</option></select>' +
+    '<label class="lbl" style="margin-top:10px">Note</label><input class="field" id="oc" value="' + esc(o ? o.comment : '') + '">' +
+    '<div class="err" id="merr"></div><div class="row" style="margin-top:14px"><button class="btn red grow" id="osave">Save</button><button class="btn ghost" onclick="closeModal()">Cancel</button></div>');
+  $('opm').value = o ? o.payMethod : 'other';
+  if ($('og')) $('og').value = o ? (o.group || '') : 'cast';
+  function prev(){ var p = parseItems($('oi').value); var t = 0; p.items.forEach(function(i){ t += i.qty * findItem(i.id).price; });
+    $('oprev').innerHTML = p.items.map(function(i){ return i.qty + '× ' + esc(findItem(i.id).name); }).join(' · ') + (p.items.length ? ' = <b>' + chf(t) + '</b>' : '') + (p.bad.length ? '<div class="err">Not found: ' + esc(p.bad.join(', ')) + '</div>' : ''); }
+  $('oi').addEventListener('input', prev); prev();
+  $('osave').onclick = function(){
+    var p = parseItems($('oi').value);
+    if (p.bad.length) { $('merr').textContent = 'Fix the items not found first.'; return; }
+    if (!p.items.length) { $('merr').textContent = 'Add at least one item.'; return; }
+    this.disabled = true;
+    call('adminSaveOrder', PIN, o ? o.id : null, { eveningId: sel, name: $('on').value, items: p.items, payMethod: $('opm').value, comment: $('oc').value, group: $('og') ? $('og').value : '' })
+      .then(function(){ closeModal(); toast('Saved'); load(true); }).catch(function(x){ $('merr').textContent = x.message; $('osave').disabled = false; });
+  };
+}
+function addOrder(){ orderForm('Add order', null); }
+function editOrder(id){ orderForm('Edit order', DATA.orders.filter(function(x){ return x.id === id; })[0]); }
+
+// ---------------------------------------------------------------- start
+(function(){ var p = window.__GAOS_PIN || ssGet(); if (p) { PIN = p; ssSet(p); load(); } else showLogin(); })();
+</script>
+
+<script>
+// ---- talk to the Google Sheet backend without needing a Google sign-in
+var GAOS_API = 'https://script.google.com/macros/s/AKfycbwk4HZlQbxwYU3WNu1wwDxEtn1D7U0CbUXMHvCLPWvGWW2xL2hrdEsBr0ZAZHRlnpNPGw/exec';
+function call(fn){
+  var args = Array.prototype.slice.call(arguments, 1);
+  var ctl = ('AbortController' in window) ? new AbortController() : null;
+  var t = ctl ? setTimeout(function(){ ctl.abort(); }, 45000) : null;
+  // keep this request "simple" (no custom headers/options) so Google's reply isn't blocked
+  return fetch(GAOS_API, {
+    method: 'POST',
+    body: JSON.stringify({ fn: fn, args: args }),
+    signal: ctl ? ctl.signal : undefined
+  }).then(function(r){ return r.json(); }, function(){
+    throw new Error('Couldn\'t reach the order system. Check your internet connection and try again.');
+  }).then(function(j){
+    if (t) clearTimeout(t);
+    if (!j || !j.ok) throw new Error((j && j.error) || 'Something went wrong. Please try again.');
+    return j.result;
+  });
+}
+</script>
+</body>
+</html>
