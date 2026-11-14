@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>GAOS × Hong Sheng · order</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥢</text></svg>">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --red:#a3201b; --red-d:#7d1612; --gold:#d9a441; --cream:#fbf6ee; --paper:#fff;
+    --ink:#2a1d17; --muted:#7a6a60; --line:#eadfce; --ok:#2f7d4f; --shadow:0 6px 24px rgba(60,20,10,.12);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--cream);color:var(--ink);font:15px/1.4 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  button{font:inherit;cursor:pointer}
+  input,textarea{font:inherit;color:inherit}
+  .wrap{max-width:760px;margin:0 auto;padding:0 14px}
+
+  header.hero{background:radial-gradient(120% 140% at 0% 0%,#c22a22 0%,var(--red) 45%,var(--red-d) 100%);color:#fff;padding:22px 0 18px;position:relative;overflow:hidden}
+  header.hero:after{content:"";position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;border:18px solid rgba(217,164,65,.22)}
+  .brand{font-family:Fraunces,Georgia,serif;font-weight:800;font-size:28px;letter-spacing:.2px;margin:0}
+  .brand span{color:var(--gold)}
+  .sub{opacity:.85;margin-top:2px;font-size:14px}
+  .evpick{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+  .evpick button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:999px;padding:7px 14px;font-weight:600;font-size:13px}
+  .evpick button.on{background:var(--gold);border-color:var(--gold);color:#3a2205}
+  .evone{margin-top:12px;display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.14);border-radius:999px;padding:6px 12px;font-weight:600;font-size:13px}
+  .cdbox{margin-top:8px;display:inline-flex;align-items:center;gap:6px;background:rgba(0,0,0,.18);border-radius:999px;padding:5px 12px;font-weight:700;font-size:13px}
+  .cdbox.urgent{background:var(--gold);color:#3a2205}
+  .cdrow{background:#fff7e6;border:1px solid var(--gold);border-radius:10px;padding:8px 12px;margin:0 0 10px;font-weight:600;font-size:14px}
+  .cdrow.urgent{background:#fde8e6;border-color:#e6a49c;color:#8b1c14}
+  .dot{width:8px;height:8px;border-radius:50%;background:#7dff9f;box-shadow:0 0 0 3px rgba(125,255,159,.25)}
+
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin:14px 0;box-shadow:0 1px 0 rgba(0,0,0,.02)}
+  label.lbl{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px}
+  .field{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:12px;background:#fff;outline:none;font-size:16px}
+  .field:focus{border-color:var(--gold)}
+
+  .mine{border-left:4px solid var(--gold)}
+  .mine h3{margin:0 0 6px;font-size:15px}
+  .myord{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px dashed var(--line)}
+  .myord:first-of-type{border-top:0}
+  .myord small{color:var(--muted)}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:#f3ead9;color:#7a5512}
+  .pill.ok{background:#e3f3e8;color:var(--ok)}
+  .pill.wait{background:#e2ecf8;color:#1f4a7a}
+  .btn{border:0;border-radius:10px;padding:10px 14px;font-weight:700}
+  .btn.ghost{background:#f4ece0;color:var(--ink)}
+  .btn.red{background:var(--red);color:#fff}
+  .btn.gold{background:var(--gold);color:#3a2205}
+  .btn.block{width:100%;padding:14px;font-size:16px}
+  .btn:disabled{opacity:.5}
+
+  .sticky{position:sticky;top:0;z-index:5;background:var(--cream);padding:10px 0 6px;border-bottom:1px solid var(--line)}
+  .search{position:relative}
+  .search input{padding-left:38px}
+  .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.5}
+  .chips{display:flex;gap:6px;overflow-x:auto;padding:10px 0 4px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;white-space:nowrap;color:var(--ink)}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  h2.sec{font-family:Fraunces,Georgia,serif;font-size:19px;margin:22px 0 8px;color:var(--red-d);scroll-margin-top:120px}
+  .item{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 10px 10px 12px;margin-bottom:8px;transition:border-color .15s,box-shadow .15s}
+  .item.has{border-color:var(--gold);box-shadow:0 0 0 2px rgba(217,164,65,.25)}
+  .num{flex:0 0 auto;min-width:42px;height:32px;padding:0 6px;border-radius:8px;background:#f7eedf;color:var(--red-d);font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px}
+  .num.txt{background:#f1ede7;color:var(--muted);font-size:11px}
+  .info{flex:1;min-width:0}
+  .nm{font-weight:600;line-height:1.25}
+  .en{color:var(--muted);font-size:13px;margin-top:2px}
+  .pr{font-weight:700;font-size:14px;margin-top:3px}
+  .step{display:flex;align-items:center;gap:2px;flex:0 0 auto}
+  .step button{width:38px;height:38px;border-radius:10px;border:0;font-size:22px;line-height:1;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .step .minus{background:#f4ece0;color:var(--ink)}
+  .step .plus{background:var(--red);color:#fff}
+  .step .q{min-width:24px;text-align:center;font-weight:800}
+  .fav{background:none;border:0;padding:0 2px;margin-left:6px;font-size:18px;line-height:1;color:#c9b9a3;vertical-align:-2px}
+  .fav.on{color:var(--gold)}
+  h2.sec.mine-sec{color:var(--ink)}
+  h2.rowh{display:flex;justify-content:space-between;align-items:center}
+  .clr{background:#f4ece0;border:0;border-radius:8px;padding:5px 10px;font:600 13px Inter,system-ui,sans-serif;color:var(--muted)}
+  .unrec{background:none;border:0;padding:0 4px;margin-left:8px;font-size:14px;color:#b9a994;vertical-align:-1px}
+  .tip{color:var(--muted);font-size:13px;margin:12px 2px 0}
+  .add{background:var(--red);color:#fff;border:0;border-radius:10px;padding:9px 14px;font-weight:700}
+  .empty{text-align:center;color:var(--muted);padding:30px 0}
+
+  .bar{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(251,246,238,.95) 30%);pointer-events:none}
+  .bar .btn{pointer-events:auto;max-width:732px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow)}
+  .bar .count{background:rgba(255,255,255,.2);border-radius:8px;padding:2px 8px;margin-right:8px}
+  .spacer{height:90px}
+
+  .sheet-bg{position:fixed;inset:0;background:rgba(30,10,5,.45);z-index:30;display:none}
+  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:31;background:var(--cream);border-radius:20px 20px 0 0;max-height:92vh;overflow:auto;transform:translateY(100%);transition:transform .25s ease;box-shadow:0 -10px 40px rgba(0,0,0,.2)}
+  .sheet.open{transform:none}
+  .sheet .grab{width:44px;height:5px;border-radius:9px;background:#d8cbb8;margin:10px auto 4px}
+  .sheet .inner{max-width:640px;margin:0 auto;padding:6px 16px calc(20px + env(safe-area-inset-bottom))}
+  .sheet h2{font-family:Fraunces,Georgia,serif;margin:6px 0 12px;font-size:22px}
+  .line{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .line .info{font-size:14px}
+  .tot{display:flex;justify-content:space-between;font-weight:800;font-size:18px;padding:14px 0 4px}
+
+  .pay{display:grid;gap:8px;margin-top:6px}
+  .payopt{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:12px;text-align:left}
+  .payopt.on{border-color:var(--red);box-shadow:0 0 0 2px rgba(163,32,27,.15)}
+  .logo{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;flex:0 0 auto;font-size:12px}
+  .logo.tw{background:#111;font-size:9px;letter-spacing:-.2px}
+  .logo.rv{background:#0666eb}
+  .logo.ot{background:#8a7a6c}
+  .payopt b{display:block}
+  .payopt small{color:var(--muted)}
+
+  .howpay{background:#fff;border:1px dashed var(--gold);border-radius:12px;padding:12px;margin-top:10px}
+  .howpay .big{font-size:22px;font-weight:800;letter-spacing:.5px}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .copy{background:#f4ece0;border:0;border-radius:8px;padding:7px 10px;font-weight:700;font-size:13px}
+  a.revbtn{display:inline-block;background:#0666eb;color:#fff;text-decoration:none;font-weight:700;border-radius:10px;padding:11px 16px;margin-top:8px}
+  .grp{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .grpbtn{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:14px 10px;font-weight:800;font-size:16px}
+  .grpbtn span{display:block;font-size:22px;margin-bottom:2px}
+  .grpbtn.on{border-color:var(--red);background:#fff4f2;box-shadow:0 0 0 2px rgba(163,32,27,.15)}
+  .pill.grp-cast{background:#f6e3f0;color:#7a1f5c}.pill.grp-crew{background:#e2ecf8;color:#1f4a7a}
+  .must{background:#fde8e6;border:1.5px solid #e6a49c;color:#7d1612;border-radius:10px;padding:10px 12px;margin-top:10px;font-size:13px}
+  .must .msg{background:#fff;border-radius:6px;padding:4px 8px;font-weight:700;color:var(--ink)}
+  .nocash{background:#fff7e6;border:1px solid var(--gold);border-radius:10px;padding:9px 12px;margin:0 0 8px;font-size:13px}
+  .err{background:#fde8e6;color:#8b1c14;border-radius:10px;padding:10px 12px;margin:10px 0;font-weight:600;display:none}
+
+  .done{text-align:center;padding:10px 0}
+  .tick{width:64px;height:64px;border-radius:50%;background:#e3f3e8;color:var(--ok);display:flex;align-items:center;justify-content:center;margin:6px auto 8px;font-size:34px}
+  .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 14px;border-radius:10px;font-weight:600;z-index:50;opacity:0;transition:opacity .2s;pointer-events:none}
+  .toast.show{opacity:1}
+  .loading{padding:60px 0;text-align:center;color:var(--muted)}
+  .spin{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--red);border-radius:50%;animation:sp 1s linear infinite;margin:0 auto 10px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .closed{text-align:center;padding:40px 10px}
+  .closed .big{font-size:48px}
+  .orgbtn{position:absolute;top:12px;right:12px;z-index:2;width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.14);color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center;padding:0}
+  .orgbtn:active{background:rgba(255,255,255,.3)}
+  @media(min-width:700px){ .brand{font-size:34px} .item{padding:12px 12px 12px 14px} }
+</style>
+</head>
+<body>
+<header class="hero">
+  <button class="orgbtn" id="orgBtn" title="Organiser" aria-label="Organiser login">🔒</button>
+  <div class="wrap">
+    <h1 class="brand">GAOS <span>×</span> Hong Sheng</h1>
+    <div class="sub" id="subline">Group order · Nyon</div>
+    <div id="evbox"></div>
+  </div>
+</header>
+
+<main class="wrap" id="app">
+  <div class="loading"><div class="spin"></div>Loading the menu…</div>
+</main>
+
+<div class="bar" id="bar" style="display:none">
+  <button class="btn red block" id="barBtn"><span><span class="count" id="barCount">0</span>View order</span><span id="barTotal">CHF 0.00</span></button>
+</div>
+
+<div class="sheet-bg" id="sheetBg"></div>
+<div class="sheet" id="sheet"><div class="grab"></div><div class="inner" id="sheetInner"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+var D = null;               // public data from server
+var cart = {};              // id -> qty
+var evId = null;            // selected evening
+var editing = null;         // {id, key} when editing an existing order
+var payMethod = null;
+var comment = '';
+var filter = '';
+var myOrders = [];          // orders loaded from server for this device
+var LS_KEY = 'gaos_hongsheng_orders';
+var LS_NAME = 'gaos_hongsheng_name';
+var group = '';
+var LS_FAV = 'gaos_hongsheng_favs';
+var LS_RECENT = 'gaos_hongsheng_recent';
+var LS_RECENT_HIDDEN = 'gaos_hongsheng_recent_hidden';   // cast/crew: chosen fresh for every order, never remembered
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function chf(n){ return (D ? D.currency : 'CHF') + ' ' + Number(n || 0).toFixed(2); }
+function lsGet(k, d){ try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } }
+function lsSet(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+function isNumId(id){ return /^\d+[A-Z]?$/.test(id); }
+function byId(id){ for (var i = 0; i < D.menu.length; i++) if (D.menu[i].id === id) return D.menu[i]; return null; }
+function slug(s){ return 's-' + s.replace(/[^a-z0-9]+/gi, '-').toLowerCase(); }
+
+function toast(msg){ var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(function(){ t.classList.remove('show'); }, 1800); }
+
+function call(fn){
+  var args = Array.prototype.slice.call(arguments, 1);
+  return new Promise(function(res, rej){
+    var r = google.script.run.withSuccessHandler(res).withFailureHandler(function(e){ rej(e && e.message ? e : new Error(String(e))); });
+    r[fn].apply(r, args);
+  });
+}
+
+function copyText(text){
+  function fallback(){
+    var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); toast('Copied'); } catch(e){ toast('Copy: ' + text); }
+    document.body.removeChild(ta);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function(){ toast('Copied'); }, fallback);
+  } else fallback();
+}
+
+// ------------------------------------------------------------ boot
+function boot(){
+  call('getPublicData').then(function(d){
+    D = d;
+    $('subline').textContent = 'Group order · ' + d.restaurant;
+    if (d.evenings.length) evId = d.evenings[0].id;
+    loadMine().then(render);
+    render();
+  }).catch(function(e){
+    $('app').innerHTML = '<div class="closed"><div class="big">😕</div><p>Couldn\'t load the menu.</p><p style="color:var(--muted)">' + esc(e.message) + '</p><button class="btn red" onclick="location.reload()">Try again</button></div>';
+  });
+}
+
+function loadMine(){
+  var refs = lsGet(LS_KEY, []);
+  if (!refs.length) return Promise.resolve();
+  return call('getMyOrders', refs).then(function(list){
+    myOrders = list;
+    var hid = lsGet(LS_RECENT_HIDDEN, []);
+    list.slice().reverse().forEach(function(o){ addRecent(o.items.filter(function(i){ return hid.indexOf(i.id) < 0; }), true); });
+    // forget refs the server no longer knows (cancelled/deleted)
+    lsSet(LS_KEY, refs.filter(function(r){ return list.some(function(o){ return o.id === r.id; }); }));
+  }).catch(function(){});
+}
+
+// ------------------------------------------------------------ render
+function render(){
+  if (!D) return;
+  renderEvenings();
+  if (!D.evenings.length) {
+    $('bar').style.display = 'none';
+    $('app').innerHTML = mineHtml() + '<div class="closed"><div class="big">🥢</div><h2 style="font-family:Fraunces,serif">Ordering isn\'t open right now</h2><p style="color:var(--muted)">Matt will open the next order before the next rehearsal or show.</p></div>';
+    return;
+  }
+  var name = lsGet(LS_NAME, '');
+  var html = '';
+  html += mineHtml();
+  if (editing) {
+    html += '<div class="card" style="background:#fff7e6;border-color:var(--gold)"><b>Editing your order</b><div style="color:var(--muted);font-size:13px">Change items below, then tap “Review” to save.</div><button class="btn ghost" style="margin-top:8px" onclick="stopEdit()">Stop editing</button></div>';
+  }
+  html += '<div class="card"><label class="lbl" for="name">Your name</label><input class="field" id="name" autocomplete="name" placeholder="e.g. Karin" value="' + esc(name) + '"></div>';
+  html += '<div class="sticky"><div class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input class="field" id="q" type="search" inputmode="search" placeholder="Search: 106, canard, curry…" value="' + esc(filter) + '"></div>';
+  html += '<div class="chips" id="chips">' + sections().map(function(s){ return '<button class="chip" data-sec="' + esc(slug(s)) + '">' + esc(shortSec(s)) + '</button>'; }).join('') + '</div></div>';
+  html += '<div id="menu"></div><div class="spacer"></div>';
+  $('app').innerHTML = html;
+  $('name').addEventListener('input', function(){ lsSet(LS_NAME, this.value); });
+  $('q').addEventListener('input', function(){ filter = this.value; renderMenu(); });
+  Array.prototype.forEach.call(document.querySelectorAll('.chip'), function(c){
+    c.addEventListener('click', function(){
+      filter = ''; $('q').value = ''; renderMenu();
+      var el = document.getElementById(c.getAttribute('data-sec'));
+      if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  });
+  renderMenu();
+}
+
+function renderEvenings(){
+  var ev = D.evenings;
+  if (!ev.length) { $('evbox').innerHTML = ''; return; }
+  if (ev.length === 1) {
+    $('evbox').innerHTML = '<div class="evone"><span class="dot"></span>Ordering open: ' + esc(evLabel(ev[0])) + '</div>';
+  } else {
+    $('evbox').innerHTML = '<div class="evpick">' + ev.map(function(e){
+      return '<button class="' + (e.id === evId ? 'on' : '') + '" onclick="pickEvening(\'' + e.id + '\')">' + esc(evLabel(e)) + '</button>';
+    }).join('') + '</div>';
+  }
+  var cur = curEvening();
+  if (cur && cur.deadline) $('evbox').innerHTML += '<div><div class="cdbox" data-cd="' + cur.deadline + '">⏰ <span></span></div></div>';
+  tick();
+}
+function curEvening(){ var c = null; (D ? D.evenings : []).forEach(function(e){ if (e.id === evId) c = e; }); return c; }
+function fmtDT(ms){ return new Date(ms).toLocaleString('en-GB', {weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}); }
+function cdText(ms){
+  var left = ms - Date.now();
+  if (left <= 0) return 'Ordering has closed';
+  var m = Math.floor(left / 60000), h = Math.floor(m / 60);
+  if (h >= 24) return 'Orders close ' + fmtDT(ms);
+  if (h >= 1) return 'Orders close in ' + h + 'h ' + (m % 60) + 'm';
+  if (m >= 10) return 'Orders close in ' + m + ' min';
+  var sec = Math.floor(left / 1000) % 60;
+  return 'Orders close in ' + m + ':' + (sec < 10 ? '0' : '') + sec;
+}
+function tick(){
+  Array.prototype.forEach.call(document.querySelectorAll('[data-cd]'), function(el){
+    var ms = +el.getAttribute('data-cd');
+    var t = el.querySelector('span') || el; t.textContent = cdText(ms);
+    el.classList.toggle('urgent', ms - Date.now() < 30 * 60000);
+  });
+  var cur = curEvening();
+  if (cur && cur.deadline && Date.now() >= cur.deadline) {
+    D.evenings = D.evenings.filter(function(e){ return e.id !== cur.id; });
+    evId = D.evenings.length ? D.evenings[0].id : null;
+    if ($('sheet').classList.contains('open') && !$('sheetInner').querySelector('.done')) closeSheet();
+    myOrders.forEach(function(o){ if (o.eveningId === cur.id) o.eveningOpen = false; });
+    editing = null;
+    toast('Ordering has closed');
+    render();
+  }
+}
+setInterval(tick, 1000);
+function evLabel(e){
+  if (!e) return '';
+  var d = e.date ? fmtDate(e.date) : '';
+  return e.name + (d ? ' · ' + d : '');
+}
+function fmtDate(s){
+  var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s); if (!m) return s;
+  var dt = new Date(+m[1], +m[2]-1, +m[3]);
+  return dt.toLocaleDateString('en-GB', {weekday:'short', day:'numeric', month:'short'});
+}
+function pickEvening(id){ if (editing) return toast('Finish editing first'); evId = id; renderEvenings(); }
+
+function sections(){ var s = []; D.menu.forEach(function(m){ if (s.indexOf(m.section) < 0) s.push(m.section); }); return s; }
+function shortSec(s){ var p = s.split('/'); return (p[1] || p[0]).trim().replace(/^./, function(c){ return c.toUpperCase(); }); }
+
+function matches(m, q){
+  if (!q) return true;
+  q = q.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+  var hay = (m.id + ' ' + m.name + ' ' + m.en + ' ' + m.section).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  if (/^\d+[a-z]?$/.test(q)) return m.id.toLowerCase() === q || m.id.toLowerCase().indexOf(q) === 0;
+  return q.split(/\s+/).every(function(w){ return hay.indexOf(w) >= 0; });
+}
+
+function renderMenu(){
+  var html = '';
+  var any = false;
+  if (!filter) html += quickHtml();
+  sections().forEach(function(s){
+    var items = D.menu.filter(function(m){ return m.section === s && matches(m, filter); });
+    if (!items.length) return;
+    any = true;
+    html += '<h2 class="sec" id="' + esc(slug(s)) + '">' + esc(s) + '</h2>';
+    items.forEach(function(m){ html += itemHtml(m); });
+  });
+  if (!any) html = '<div class="empty">No dish matches “' + esc(filter) + '”.</div>';
+  $('menu').innerHTML = html;
+  bindSteps($('menu'));
+  updateBar();
+}
+
+function itemHtml(m, recent){
+  var q = cart[m.id] || 0;
+  var num = isNumId(m.id) ? '<div class="num">' + esc(m.id) + '</div>' : '<div class="num txt">' + esc(shortSec(m.section).slice(0,5)) + '</div>';
+  var ctl = q ? '<div class="step"><button class="minus" data-id="' + esc(m.id) + '" data-d="-1" aria-label="Remove one">−</button><span class="q">' + q + '</span><button class="plus" data-id="' + esc(m.id) + '" data-d="1" aria-label="Add one">+</button></div>'
+              : '<button class="add" data-id="' + esc(m.id) + '" data-d="1">Add</button>';
+  return '<div class="item' + (q ? ' has' : '') + '" data-row="' + esc(m.id) + '"' + (recent ? ' data-recent="1"' : '') + '>' + num +
+    '<div class="info"><div class="nm">' + esc(m.name) + '</div>' + (m.en && m.en !== m.name ? '<div class="en">' + esc(m.en) + '</div>' : '') +
+    '<div class="pr">' + chf(m.price) + favBtn(m.id) + (recent ? '<button class="unrec" data-unrec="' + esc(m.id) + '" aria-label="Remove from ordered before">✕</button>' : '') + '</div></div>' + ctl + '</div>';
+}
+
+function bindSteps(root){
+  Array.prototype.forEach.call(root.querySelectorAll('button[data-unrec]'), function(b){
+    b.addEventListener('click', function(){ removeRecent(b.getAttribute('data-unrec')); });
+  });
+  Array.prototype.forEach.call(root.querySelectorAll('button[data-fav]'), function(b){
+    b.addEventListener('click', function(){ toggleFav(b.getAttribute('data-fav')); });
+  });
+  Array.prototype.forEach.call(root.querySelectorAll('button[data-d]'), function(b){
+    b.addEventListener('click', function(){ bump(b.getAttribute('data-id'), +b.getAttribute('data-d')); });
+  });
+}
+
+function bump(id, d){
+  cart[id] = Math.max(0, Math.min(50, (cart[id] || 0) + d));
+  if (!cart[id]) delete cart[id];
+  // re-render just this row
+  refreshRows(id);
+  updateBar();
+  if ($('sheet').classList.contains('open')) renderReview();
+}
+
+function cartList(){ return Object.keys(cart).map(function(id){ var m = byId(id); return m ? {id:id, qty:cart[id], name:m.name, en:m.en, price:m.price} : null; }).filter(Boolean); }
+function cartTotal(){ return cartList().reduce(function(s, i){ return s + i.qty * i.price; }, 0); }
+function cartCount(){ return cartList().reduce(function(s, i){ return s + i.qty; }, 0); }
+
+function updateBar(){
+  var n = cartCount();
+  $('bar').style.display = n ? 'block' : 'none';
+  $('barCount').textContent = n;
+  $('barTotal').textContent = chf(cartTotal());
+  $('barBtn').firstChild.lastChild.textContent = editing ? 'Review changes' : 'View order';
+}
+
+// ------------------------------------------------------------ my orders on this device
+function mineHtml(){
+  var list = myOrders;
+  if (!list.length) return '';
+  var h = '<div class="card mine"><h3>Your orders from this device</h3>';
+  list.forEach(function(o){
+    h += '<div class="myord"><div><b>' + esc(o.name) + '</b> · ' + chf(o.total) + ' ' + (o.group ? '<span class="pill grp-' + o.group + '">' + (o.group === 'cast' ? 'Cast' : 'Crew') + '</span> ' : '') + (o.paid ? '<span class="pill ok">Paid ✓</span>' : o.claimed ? '<span class="pill wait">Paid · waiting for Matt to confirm</span>' : '<span class="pill">Not paid yet</span>') +
+      '<br><small>' + esc(o.eveningName) + ' · ' + o.items.map(function(i){ return i.qty + '× ' + (isNumId(i.id) ? '#' + i.id : i.name); }).join(', ') + '</small></div>' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">' +
+      (o.paid || o.claimed ? '' : '<button class="btn ghost" onclick="showPay(\'' + o.id + '\')">Pay</button>') +
+      (o.eveningOpen ? '<button class="btn ghost" onclick="startEdit(\'' + o.id + '\')">Edit</button>' : '') + '</div></div>';
+  });
+  return h + '</div>';
+}
+
+function refFor(id){ var r = lsGet(LS_KEY, []); for (var i = 0; i < r.length; i++) if (r[i].id === id) return r[i]; return null; }
+function orderById(id){ for (var i = 0; i < myOrders.length; i++) if (myOrders[i].id === id) return myOrders[i]; return null; }
+
+function startEdit(id){
+  var o = orderById(id), ref = refFor(id); if (!o || !ref) return;
+  editing = ref; evId = o.eveningId; cart = {};
+  o.items.forEach(function(i){ if (byId(i.id)) cart[i.id] = i.qty; });
+  payMethod = o.payMethod; comment = o.comment; if (o.group) group = o.group;
+  lsSet(LS_NAME, o.name);
+  render(); window.scrollTo({top:0, behavior:'smooth'});
+}
+function stopEdit(){ editing = null; cart = {}; payMethod = null; comment = ''; group = ''; render(); }
+
+function showPay(id){
+  var o = orderById(id); if (!o) return;
+  openSheet('<h2>Pay ' + chf(o.total) + '</h2>' + payInfo(o.payMethod || 'twint', o.total, o.name, true) + paidBtn(o.id) +
+    '<button class="btn ghost block" style="margin-top:8px" onclick="closeSheet()">Close</button>');
+}
+function paidBtn(id){ return '<button class="btn gold block" style="margin-top:14px" id="paidBtn" onclick="iPaid(\'' + id + '\')">✓ I\'ve paid</button><div style="color:var(--muted);font-size:12px;text-align:center;margin-top:6px">Tap once you\'ve sent the money. Matt will confirm it.</div>'; }
+function iPaid(id){
+  var ref = refFor(id); if (!ref) return;
+  var b = $('paidBtn'); if (b) { b.disabled = true; b.textContent = 'Sending…'; }
+  call('markMyPaid', ref.id, ref.key).then(function(){
+    openSheet('<div class="done"><div class="tick">👍</div><h2>Thanks!</h2><p style="color:var(--muted)">Matt will tick you off once he sees the payment.</p></div><button class="btn ghost block" onclick="closeSheet()">Done</button>');
+    loadMine().then(render);
+  }).catch(function(e){ if (b) { b.disabled = false; b.textContent = '✓ I\'ve paid'; } toast(e.message); });
+}
+
+// ------------------------------------------------------------ review / checkout sheet
+function openSheet(html){ $('sheetInner').innerHTML = html; $('sheetBg').style.display = 'block'; requestAnimationFrame(function(){ $('sheet').classList.add('open'); }); }
+function closeSheet(){ $('sheet').classList.remove('open'); setTimeout(function(){ $('sheetBg').style.display = 'none'; }, 250); }
+$('sheetBg').addEventListener('click', closeSheet);
+$('barBtn').addEventListener('click', function(){ renderReview(true); });
+
+function renderReview(open){
+  var list = cartList();
+  if (!list.length) { closeSheet(); return; }
+  var ev = null; D.evenings.forEach(function(e){ if (e.id === evId) ev = e; });
+  var h = '<h2>' + (editing ? 'Your changed order' : 'Your order') + '</h2>';
+  h += '<div style="color:var(--muted);margin:-6px 0 8px">' + esc(evLabel(ev)) + '</div>';
+  if (ev && ev.deadline) h += '<div class="cdrow" data-cd="' + ev.deadline + '">⏰ <span>' + cdText(ev.deadline) + '</span></div>';
+  list.forEach(function(i){
+    h += '<div class="line"><div class="info"><b>' + (isNumId(i.id) ? '#' + esc(i.id) + ' ' : '') + esc(i.name) + '</b><div class="en">' + chf(i.price) + ' each</div></div>' +
+      '<div class="step"><button class="minus" data-id="' + esc(i.id) + '" data-d="-1">−</button><span class="q">' + i.qty + '</span><button class="plus" data-id="' + esc(i.id) + '" data-d="1">+</button></div>' +
+      '<div style="min-width:76px;text-align:right;font-weight:700">' + chf(i.qty * i.price) + '</div></div>';
+  });
+  h += '<div class="tot"><span>Total</span><span>' + chf(cartTotal()) + '</span></div>';
+  h += '<label class="lbl" style="margin-top:14px">Your name</label><input class="field" id="name2" value="' + esc(lsGet(LS_NAME, '')) + '" placeholder="Your name">';
+  if (ev && ev.split) {
+    h += '<label class="lbl" style="margin-top:16px">Are you cast or crew?</label><div class="grp">' +
+      '<button class="grpbtn' + (group === 'cast' ? ' on' : '') + '" data-g="cast"><span>🎭</span>Cast</button>' +
+      '<button class="grpbtn' + (group === 'crew' ? ' on' : '') + '" data-g="crew"><span>🔧</span>Crew</button></div>';
+  }
+  h += '<label class="lbl" style="margin-top:16px">How will you pay Matt?</label><div class="nocash"><b>💳 TWINT or Revolut only. No cash.</b><br>No TWINT or Revolut? Ask someone who has it to pay for you, choose <b>Someone else pays</b> and say who in the note.</div><div class="pay">' +
+    payOpt('twint', 'tw', 'TWINT', 'TWINT', 'Send to ' + D.twint) +
+    payOpt('revolut', 'rv', 'Rev', 'Revolut', '@' + D.revolut) +
+    payOpt('other', 'ot', '👥', 'Someone else pays', 'Grouped with a friend\'s payment, say who in the note') + '</div>';
+  h += '<div id="payInfo"></div>';
+  h += '<label class="lbl" style="margin-top:16px" for="cmt">Note for Matt <span style="text-transform:none;font-weight:500">(e.g. “Sam is paying for me”, “no chili”)</span></label><textarea class="field" id="cmt" rows="2">' + esc(comment) + '</textarea>';
+  h += '<div class="err" id="err"></div>';
+  h += '<button class="btn red block" id="submitBtn" style="margin-top:14px">' + (editing ? 'Save changes' : 'Place order · ' + chf(cartTotal())) + '</button>';
+  h += '<button class="btn ghost block" style="margin-top:8px" onclick="closeSheet()">Keep browsing</button>';
+  var keep = document.activeElement && document.activeElement.id;
+  if (open || !$('sheet').classList.contains('open')) openSheet(h); else $('sheetInner').innerHTML = h;
+  bindSteps($('sheetInner'));
+  Array.prototype.forEach.call(document.querySelectorAll('.payopt'), function(b){
+    b.addEventListener('click', function(){ payMethod = b.getAttribute('data-m'); markPay(); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('.grpbtn'), function(b){
+    b.addEventListener('click', function(){ group = b.getAttribute('data-g'); var er = $('err'); if (er) er.style.display = 'none'; Array.prototype.forEach.call(document.querySelectorAll('.grpbtn'), function(x){ x.classList.toggle('on', x === b); }); });
+  });
+  $('name2').addEventListener('input', function(){ lsSet(LS_NAME, this.value); markPay(); var n = $('name'); if (n) n.value = this.value; });
+  $('cmt').addEventListener('input', function(){ comment = this.value; });
+  $('submitBtn').addEventListener('click', submit);
+  markPay();
+  if (keep && $(keep)) $(keep).focus();
+}
+
+function payOpt(m, cls, logo, title, sub){
+  return '<button class="payopt" data-m="' + m + '"><span class="logo ' + cls + '">' + logo + '</span><span><b>' + title + '</b><small>' + esc(sub) + '</small></span></button>';
+}
+function markPay(){
+  Array.prototype.forEach.call(document.querySelectorAll('.payopt'), function(b){ b.classList.toggle('on', b.getAttribute('data-m') === payMethod); });
+  var box = $('payInfo'); if (!box) return;
+  box.innerHTML = payMethod ? payInfo(payMethod, cartTotal(), lsGet(LS_NAME, ''), false) : '';
+}
+
+function payInfo(m, amount, name, now){
+  var amt = Number(amount).toFixed(2);
+  var when = now ? '' : '<div style="color:var(--muted);font-size:13px;margin-bottom:6px">After placing your order:</div>';
+  if (m === 'twint') {
+    return '<div class="howpay">' + when + '<div class="row"><div><div style="font-size:12px;color:var(--muted);font-weight:700">TWINT TO</div><div class="big">' + esc(D.twint) + '</div></div><button class="copy" onclick="copyText(\'' + D.twint.replace(/\s/g, '') + '\')">Copy number</button></div>' +
+      '<div class="row" style="margin-top:8px"><div>Amount: <b>' + chf(amount) + '</b></div><button class="copy" onclick="copyText(\'' + amt + '\')">Copy amount</button></div>' +
+      '<ol style="margin:10px 0 0;padding-left:18px;color:var(--muted);font-size:13px"><li>Open TWINT → <b>Send</b></li><li>Paste or type the number above</li><li>Enter ' + chf(amount) + ' and <b>put your name in the message</b></li></ol>' + mustName(name) + '</div>';
+  }
+  if (m === 'revolut') {
+    return '<div class="howpay">' + when + '<div>Send <b>' + chf(amount) + '</b> to <b>@' + esc(D.revolut) + '</b> on Revolut.</div>' +
+      '<a class="revbtn" href="https://revolut.me/' + encodeURIComponent(D.revolut) + '" target="_blank" rel="noopener">Open revolut.me/' + esc(D.revolut) + ' ↗</a>' +
+      ' <button class="copy" onclick="copyText(\'' + amt + '\')">Copy amount</button>' + mustName(name) + '</div>';
+  }
+  return '<div class="howpay">' + when + 'Ask the person paying for you to add <b>' + chf(amount) + '</b> to their TWINT or Revolut payment and mention your name in their message. Write their name in the note below.<div style="margin-top:6px;font-weight:700;color:#7d1612">No cash, please.</div></div>';
+}
+
+function payMsg(name){ return 'Chinese – ' + (String(name || '').trim() || 'your name'); }
+function mustName(name){
+  var has = String(name || '').trim();
+  return '<div class="must"><b>⚠️ You MUST put your name in the payment message</b>, otherwise Matt can\'t tell who paid.' +
+    '<div class="row" style="margin-top:6px"><span class="msg">' + esc(payMsg(name)) + '</span>' + (has ? '<button class="copy" data-copy="' + esc(payMsg(name)) + '">Copy message</button>' : '') + '</div></div>';
+}
+document.addEventListener('click', function(e){ var b = e.target.closest && e.target.closest('[data-copy]'); if (b) copyText(b.getAttribute('data-copy')); });
+
+function showErr(msg){ var e = $('err'); if (e) { e.textContent = msg; e.style.display = 'block'; } }
+
+function submit(){
+  var name = ($('name2').value || '').trim();
+  if (!name) return showErr('Please enter your name so Matt knows whose food it is.');
+  var curEv = null; D.evenings.forEach(function(e){ if (e.id === evId) curEv = e; });
+  if (curEv && curEv.split && !group) return showErr('Tap Cast or Crew so your food goes in the right order.');
+  if (!payMethod) return showErr('Choose how you\'ll pay.');
+  if (payMethod === 'other' && !($('cmt').value || '').trim()) return showErr('Say in the note who is paying for you.');
+  lsSet(LS_NAME, name);
+  var payload = { eveningId: evId, name: name, items: cartList().map(function(i){ return {id:i.id, qty:i.qty}; }), payMethod: payMethod, comment: $('cmt').value || '', group: group };
+  var btn = $('submitBtn'); btn.disabled = true; btn.textContent = 'Sending…';
+  var p = editing ? call('updateOrder', editing.id, editing.key, payload) : call('submitOrder', payload);
+  p.then(function(res){
+    if (!editing) { var refs = lsGet(LS_KEY, []); refs.push({id: res.order.id, key: res.editKey}); lsSet(LS_KEY, refs); }
+    addRecent(res.order.items);
+    var o = res.order, wasEdit = !!editing;
+    editing = null; cart = {}; comment = ''; group = '';
+    var pm = payMethod; payMethod = null;
+    openSheet('<div class="done"><div class="tick">✓</div><h2>' + (wasEdit ? 'Order updated' : 'Order placed!') + '</h2>' +
+      '<div style="color:var(--muted)">' + esc(o.name) + (o.group ? ' (' + (o.group === 'cast' ? 'Cast' : 'Crew') + ')' : '') + ' · ' + o.items.map(function(i){ return i.qty + '× ' + (isNumId(i.id) ? '#' + i.id : i.name); }).join(', ') + '</div>' +
+      '<div class="tot" style="justify-content:center;gap:10px"><span>Total</span><span>' + chf(o.total) + '</span></div></div>' +
+      payInfo(pm, o.total, o.name, true) + paidBtn(o.id) +
+      '<p style="color:var(--muted);font-size:13px;text-align:center;margin-top:14px">You can edit this order from this device until Matt closes ordering.</p>' +
+      '<button class="btn ghost block" onclick="closeSheet()">Done</button>');
+    loadMine().then(render);
+  }).catch(function(e){
+    btn.disabled = false; btn.textContent = editing ? 'Save changes' : 'Place order';
+    showErr(e.message || 'Something went wrong. Please try again.');
+  });
+}
+
+// ------------------------------------------------------------ favourites & recent (stored on this device only)
+function favs(){ return lsGet(LS_FAV, []); }
+function isFav(id){ return favs().indexOf(id) >= 0; }
+function favBtn(id){ var on = isFav(id); return '<button class="fav' + (on ? ' on' : '') + '" data-fav="' + esc(id) + '" aria-label="' + (on ? 'Remove from favourites' : 'Add to favourites') + '">' + (on ? '★' : '☆') + '</button>'; }
+function toggleFav(id){
+  var f = favs(), i = f.indexOf(id);
+  if (i >= 0) { f.splice(i, 1); toast('Removed from favourites'); } else { f.unshift(id); toast('Added to favourites ★'); }
+  lsSet(LS_FAV, f);
+  var y = window.scrollY; renderMenu(); window.scrollTo(0, y);
+}
+function addRecent(items, keepOrder){
+  var r = lsGet(LS_RECENT, []);
+  if (!keepOrder) { var ids = (items || []).map(function(i){ return i.id; }); lsSet(LS_RECENT_HIDDEN, lsGet(LS_RECENT_HIDDEN, []).filter(function(x){ return ids.indexOf(x) < 0; })); }
+  (items || []).forEach(function(i){ var k = r.indexOf(i.id); if (k >= 0) { if (keepOrder) return; r.splice(k, 1); } r.unshift(i.id); });
+  lsSet(LS_RECENT, r.slice(0, 12));
+}
+function removeRecent(id){ lsSet(LS_RECENT, lsGet(LS_RECENT, []).filter(function(x){ return x !== id; })); lsSet(LS_RECENT_HIDDEN, lsGet(LS_RECENT_HIDDEN, []).concat([id])); var y = window.scrollY; renderMenu(); window.scrollTo(0, y); }
+function clearRecent(){ lsSet(LS_RECENT_HIDDEN, lsGet(LS_RECENT_HIDDEN, []).concat(lsGet(LS_RECENT, []))); lsSet(LS_RECENT, []); var y = window.scrollY; renderMenu(); window.scrollTo(0, y); toast('Cleared'); }
+function quickHtml(){
+  var f = favs().filter(byId);
+  var r = lsGet(LS_RECENT, []).filter(function(id){ return byId(id) && f.indexOf(id) < 0; }).slice(0, 6);
+  var h = '';
+  if (f.length) { h += '<h2 class="sec mine-sec">★ Your favourites</h2>'; f.forEach(function(id){ h += itemHtml(byId(id)); }); }
+  if (r.length) { h += '<h2 class="sec mine-sec rowh"><span>🕘 Ordered before</span><button class="clr" onclick="clearRecent()">Clear</button></h2>'; r.forEach(function(id){ h += itemHtml(byId(id), true); }); }
+  if (!f.length) h += '<div class="tip">Tip: tap ☆ next to a price to keep that dish at the top on this device.</div>';
+  return h;
+}
+function refreshRows(id){
+  Array.prototype.forEach.call(document.querySelectorAll('.item[data-row="' + CSS.escape(id) + '"]'), function(row){
+    var tmp = document.createElement('div'); tmp.innerHTML = itemHtml(byId(id), row.hasAttribute('data-recent')); var n = tmp.firstChild; row.parentNode.replaceChild(n, row); bindSteps(n);
+  });
+}
+
+// ------------------------------------------------------------ organiser login
+$('orgBtn').addEventListener('click', function(){
+  openSheet('<h2>Organiser login</h2><input class="field" id="apin" type="password" placeholder="Password" autocomplete="current-password">' +
+    '<div class="err" id="err"></div><button class="btn red block" id="aGo" style="margin-top:12px">Open admin</button>' +
+    '<button class="btn ghost block" style="margin-top:8px" onclick="closeSheet()">Cancel</button>');
+  setTimeout(function(){ $('apin').focus(); }, 300);
+  function go(){
+    var pin = $('apin').value; if (!pin) return;
+    $('aGo').disabled = true; $('aGo').textContent = 'Opening…';
+    call('adminLogin', pin).then(function(){
+      try { sessionStorage.setItem('gaos_admin_pin', pin); } catch(e) {}
+      location.href = 'admin.html';
+    }).catch(function(e){ $('aGo').disabled = false; $('aGo').textContent = 'Open admin'; showErr(e.message); });
+  }
+  $('aGo').addEventListener('click', go);
+  $('apin').addEventListener('keydown', function(e){ if (e.key === 'Enter') go(); });
+});
+
+boot();
+</script>
+
+<script>
+// ---- talk to the Google Sheet backend without needing a Google sign-in
+var GAOS_API = 'https://script.google.com/macros/s/AKfycbwk4HZlQbxwYU3WNu1wwDxEtn1D7U0CbUXMHvCLPWvGWW2xL2hrdEsBr0ZAZHRlnpNPGw/exec';
+function call(fn){
+  var args = Array.prototype.slice.call(arguments, 1);
+  var ctl = ('AbortController' in window) ? new AbortController() : null;
+  var t = ctl ? setTimeout(function(){ ctl.abort(); }, 45000) : null;
+  // keep this request "simple" (no custom headers/options) so Google's reply isn't blocked
+  return fetch(GAOS_API, {
+    method: 'POST',
+    body: JSON.stringify({ fn: fn, args: args }),
+    signal: ctl ? ctl.signal : undefined
+  }).then(function(r){ return r.json(); }, function(){
+    throw new Error('Couldn\'t reach the order system. Check your internet connection and try again.');
+  }).then(function(j){
+    if (t) clearTimeout(t);
+    if (!j || !j.ok) throw new Error((j && j.error) || 'Something went wrong. Please try again.');
+    return j.result;
+  });
+}
+</script>
+</body>
+</html>
