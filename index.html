@@ -535,12 +535,19 @@ function payInfo(m, amount, name, now){
   }
   if (m === 'revolut') {
     return '<div class="howpay">' + when + '<div>Send <b>' + chf(amount) + '</b> to <b>@' + esc(D.revolut) + '</b> on Revolut.</div>' +
-      '<a class="revbtn" href="https://revolut.me/' + encodeURIComponent(D.revolut) + '" target="_blank" rel="noopener">Open revolut.me/' + esc(D.revolut) + ' ↗</a>' +
+      '<a class="revbtn" href="' + esc(revolutUrl(amount, name)) + '" target="_blank" rel="noopener">Pay ' + chf(amount) + ' on Revolut ↗</a>' +
+      '<div style="color:var(--muted);font-size:12px;margin-top:6px">The amount' + (String(name || '').trim() ? ' and your name are' : ' is') + ' filled in for you. Check them before you send.</div>' +
       ' <button class="copy" onclick="copyText(\'' + amt + '\')">Copy amount</button>' + mustName(name) + '</div>';
   }
   return '<div class="howpay">' + when + 'Ask the person paying for you to add <b>' + chf(amount) + '</b> to their TWINT or Revolut payment and mention your name in their message. Write their name in the note below.<div style="margin-top:6px;font-weight:700;color:#7d1612">No cash, please.</div></div>';
 }
 
+function revolutUrl(amount, name){
+  // revolut.me accepts the amount in cents, the currency and a note
+  var u = 'https://revolut.me/' + encodeURIComponent(D.revolut) + '?amount=' + Math.round(Number(amount) * 100) + '&currency=' + encodeURIComponent(D.currency || 'CHF');
+  if (String(name || '').trim()) u += '&note=' + encodeURIComponent(payMsg(name).slice(0, 60));
+  return u;
+}
 function payMsg(name){ return 'Chinese – ' + (String(name || '').trim() || 'your name'); }
 function mustName(name){
   var has = String(name || '').trim();
