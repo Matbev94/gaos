@@ -180,6 +180,8 @@ window.gaosApi = function(fn, args){
   .orgbtn{position:absolute;top:12px;right:12px;z-index:2;width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.14);color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center;padding:0}
   .itip{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:12px;font-size:13px}
   .itip .grow{flex:1}
+  .dupwarn{background:#fff4e0;border:1px solid #e8b64f;border-radius:12px;padding:10px 12px;margin-top:10px;font-size:13px;line-height:1.45}
+  .dupwarn .big{font-weight:800;color:#7d1612}
   .itip .x{background:none;border:0;font-size:18px;color:var(--muted);padding:4px 6px}
   .orgbtn:active{background:rgba(255,255,255,.3)}
   @media(min-width:700px){ .brand{font-size:34px} .brand .logo{height:56px} .item{padding:12px 12px 12px 14px} }
@@ -504,6 +506,7 @@ function renderReview(open){
   });
   h += '<div class="tot"><span>Total</span><span>' + chf(cartTotal()) + '</span></div>';
   h += '<label class="lbl" style="margin-top:14px">Your name</label><input class="field" id="name2" value="' + esc(lsGet(LS_NAME, '')) + '" placeholder="Your name">';
+  h += '<div id="dupWarn">' + nightHtml(cartTotal(), false) + '</div>';
   if (ev && ev.split) {
     h += '<label class="lbl" style="margin-top:16px">Are you cast or crew?</label><div class="grp">' +
       '<button class="grpbtn' + (group === 'cast' ? ' on' : '') + '" data-g="cast"><span>🎭</span>Cast</button>' +
@@ -516,7 +519,7 @@ function renderReview(open){
   h += '<div id="payInfo"></div>';
   h += '<label class="lbl" style="margin-top:16px" for="cmt">Note for Matt <span style="text-transform:none;font-weight:500">(e.g. “Sam is paying for me”, “no chili”)</span></label><textarea class="field" id="cmt" rows="2">' + esc(comment) + '</textarea>';
   h += '<div class="err" id="err"></div>';
-  h += '<button class="btn red block" id="submitBtn" style="margin-top:14px">' + (editing ? 'Save changes' : 'Place order · ' + chf(cartTotal())) + '</button>';
+  h += '<button class="btn red block" id="submitBtn" style="margin-top:14px">' + submitLabel() + '</button>';
   h += '<button class="btn ghost block" style="margin-top:8px" onclick="closeSheet()">Keep browsing</button>';
   var keep = document.activeElement && document.activeElement.id;
   if (open || !$('sheet').classList.contains('open')) openSheet(h); else $('sheetInner').innerHTML = h;
@@ -527,11 +530,44 @@ function renderReview(open){
   Array.prototype.forEach.call(document.querySelectorAll('.grpbtn'), function(b){
     b.addEventListener('click', function(){ group = b.getAttribute('data-g'); var er = $('err'); if (er) er.style.display = 'none'; Array.prototype.forEach.call(document.querySelectorAll('.grpbtn'), function(x){ x.classList.toggle('on', x === b); }); });
   });
-  $('name2').addEventListener('input', function(){ lsSet(LS_NAME, this.value); markPay(); var n = $('name'); if (n) n.value = this.value; });
+  $('name2').addEventListener('input', function(){ lsSet(LS_NAME, this.value); markPay(); var n = $('name'); if (n) n.value = this.value; clearTimeout(nightTimer); nightTimer = setTimeout(checkNight, 600); });
+  if (open || nightFor !== nightKey()) checkNight();
   $('cmt').addEventListener('input', function(){ comment = this.value; });
   $('submitBtn').addEventListener('click', submit);
   markPay();
   if (keep && $(keep)) $(keep).focus();
+}
+
+// ---------------------------------------------------------------- already ordered this evening?
+var nightPrev = [], nightFor = '', nightTimer = null, nightReq = 0;
+function nightKey(){ return evId + '|' + String(($('name2') && $('name2').value) || lsGet(LS_NAME, '')).trim().toLowerCase() + '|' + (editing ? editing.id : ''); }
+function checkNight(){
+  var name = String(($('name2') && $('name2').value) || lsGet(LS_NAME, '')).trim(), k = nightKey(), my = ++nightReq;
+  if (!name) { nightPrev = []; nightFor = k; showNight(); return; }
+  call('getNightOrders', evId, name, editing ? editing.id : '').then(function(list){
+    if (my !== nightReq) return;
+    nightPrev = list || []; nightFor = k; showNight();
+  }).catch(function(){});
+}
+function nightSums(thisTotal){
+  var prev = 0, owed = 0;
+  nightPrev.forEach(function(o){ prev += Number(o.total) || 0; if (!o.paid && !o.claimed) owed += Number(o.total) || 0; });
+  return { prev: prev, total: prev + thisTotal, owed: owed + thisTotal };
+}
+function nightHtml(thisTotal, after){
+  if (!nightPrev.length || (!after && nightFor !== nightKey())) return '';
+  var s = nightSums(thisTotal), items = [];
+  nightPrev.forEach(function(o){ (o.items || []).forEach(function(i){ items.push(i.qty + '× ' + (isNumId(i.id) ? '#' + esc(i.id) + ' ' : '') + esc(i.name)); }); });
+  var st = nightPrev.every(function(o){ return o.paid; }) ? ' · paid ✓' : (nightPrev.every(function(o){ return o.paid || o.claimed; }) ? ' · you said it\'s paid' : (nightPrev.some(function(o){ return o.paid || o.claimed; }) ? ' · partly paid' : ' · not paid yet'));
+  return '<div class="dupwarn"><b>⚠️ You\'ve already ordered for this evening' + (nightPrev.length > 1 ? ' (' + nightPrev.length + ' orders)' : '') + ':</b><br>' + items.join(', ') + ' · ' + chf(s.prev) + st +
+    '<div style="margin-top:6px">' + (after ? 'Your' : 'With this order, your') + ' total for this evening ' + (after ? 'is' : 'will be') + ' <span class="big">' + chf(s.total) + '</span>.<br>' +
+    'In total you ' + (after ? 'owe' : 'will owe') + ' Matt <span class="big">' + chf(s.owed) + '</span>' + (s.owed > thisTotal + 0.001 ? ' (this order + your unpaid earlier order)' : '') + '.</div>' +
+    (after ? '' : '<div style="color:var(--muted);margin-top:4px">Ordering for someone else? Use their name instead.</div>') + '</div>';
+}
+function submitLabel(){ return editing ? 'Save changes' : (nightPrev.length && nightFor === nightKey() ? 'Place another order · ' : 'Place order · ') + chf(cartTotal()); }
+function showNight(){
+  var b = $('dupWarn'); if (b) b.innerHTML = nightHtml(cartTotal(), false);
+  var s = $('submitBtn'); if (s && !s.disabled) s.textContent = submitLabel();
 }
 
 function payOpt(m, cls, logo, title, sub, extra){
@@ -595,15 +631,16 @@ function submit(){
   p.then(function(res){
     if (!editing) { var refs = lsGet(LS_KEY, []); refs.push({id: res.order.id, key: res.editKey}); lsSet(LS_KEY, refs); }
     addRecent(res.order.items);
-    var o = res.order, wasEdit = !!editing;
+    var o = res.order, wasEdit = !!editing, night = nightHtml(Number(o.total) || 0, true);
     editing = null; cart = {}; comment = ''; group = '';
     var pm = payMethod; payMethod = null;
     openSheet('<div class="done"><div class="tick">✓</div><h2>' + (wasEdit ? 'Order updated' : 'Order placed!') + '</h2>' +
       '<div style="color:var(--muted)">' + esc(o.name) + (o.group ? ' (' + (o.group === 'cast' ? 'Cast' : 'Crew') + ')' : '') + ' · ' + o.items.map(function(i){ return i.qty + '× ' + (isNumId(i.id) ? '#' + i.id : i.name); }).join(', ') + '</div>' +
       '<div class="tot" style="justify-content:center;gap:10px"><span>Total</span><span>' + chf(o.total) + '</span></div></div>' +
-      payInfo(pm, o.total, o.name, true) + paidBtn(o.id) +
+      night + payInfo(pm, o.total, o.name, true) + paidBtn(o.id) +
       '<p style="color:var(--muted);font-size:13px;text-align:center;margin-top:14px">You can edit this order from this device until Matt closes ordering.</p>' +
       '<button class="btn ghost block" onclick="closeSheet()">Done</button>');
+    nightPrev = []; nightFor = '';
     loadMine().then(render);
   }).catch(function(e){
     btn.disabled = false; btn.textContent = editing ? 'Save changes' : 'Place order';
