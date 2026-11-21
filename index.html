@@ -581,7 +581,9 @@ function payBadges(){
 function markPay(){
   Array.prototype.forEach.call(document.querySelectorAll('.payopt'), function(b){ b.classList.toggle('on', b.getAttribute('data-m') === payMethod); });
   var box = $('payInfo'); if (!box) return;
-  box.innerHTML = payMethod ? payInfo(payMethod, cartTotal(), lsGet(LS_NAME, ''), false) : '';
+  // payment buttons only appear AFTER the order is placed, so nobody pays without ordering
+  box.innerHTML = !payMethod ? '' : (payMethod === 'other' ? payInfo(payMethod, cartTotal(), lsGet(LS_NAME, ''), false) :
+    '<div class="howpay"><b>👇 Place your order first.</b> The ' + (payMethod === 'twint' ? 'TWINT number' : 'Revolut payment button') + ' appears on the next screen, with your amount ready to pay.</div>');
 }
 
 function payInfo(m, amount, name, now){
