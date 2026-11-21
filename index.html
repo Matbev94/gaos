@@ -582,8 +582,9 @@ function markPay(){
   Array.prototype.forEach.call(document.querySelectorAll('.payopt'), function(b){ b.classList.toggle('on', b.getAttribute('data-m') === payMethod); });
   var box = $('payInfo'); if (!box) return;
   // payment buttons only appear AFTER the order is placed, so nobody pays without ordering
-  box.innerHTML = !payMethod ? '' : (payMethod === 'other' ? payInfo(payMethod, cartTotal(), lsGet(LS_NAME, ''), false) :
-    '<div class="howpay"><b>👇 Place your order first.</b> The ' + (payMethod === 'twint' ? 'TWINT number' : 'Revolut payment button') + ' appears on the next screen, with your amount ready to pay.</div>');
+  box.innerHTML = !payMethod ? '' : '<div class="howpay"><b>👇 Place your order first.</b> ' + (payMethod === 'other' ?
+    'Write who is paying for you in the note below. After ordering, ask them to add your amount to their payment.' :
+    'The ' + (payMethod === 'twint' ? 'TWINT number' : 'Revolut payment button') + ' appears on the next screen, with your amount ready to pay.') + '</div>';
 }
 
 function payInfo(m, amount, name, now){
