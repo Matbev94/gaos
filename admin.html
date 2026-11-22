@@ -159,6 +159,14 @@ window.gaosApi = function(fn, args){
   .pl-pt{border-top:1px dotted #999;margin-top:2px;padding-top:2px;font-weight:700}
   .pl-gt{font-size:13pt;font-weight:800;border-top:2.5px solid #000;margin-top:6px;padding:4px 4px 0}
   .pl-u{font-weight:400;font-size:10pt;color:#333;margin-top:2px}
+  .r-block{margin-top:14px;break-inside:avoid;page-break-inside:avoid}
+  .r-block h2{font-size:15pt;margin:0 0 4px}
+  .r-t{width:100%;border-collapse:collapse}
+  .r-t th{text-align:left;font-size:9.5pt;color:#444;border-bottom:1.5px solid #000;padding:3px 4px}
+  .r-t td{border-bottom:1px solid #ccc;padding:5px 4px;vertical-align:top}
+  .r-q{width:34px;font-weight:800;font-size:13pt}.r-id{width:44px;font-weight:700}
+  .r-n,.r-t th.r-n{text-align:right;white-space:nowrap}
+  .r-sub{font-weight:700;padding:5px 4px 0}
   .pl-foot{margin-top:8px;font-size:10pt;color:#444}
 </style>
 </head>
@@ -267,7 +275,7 @@ function render(){
   $('pub').textContent = pubUrl();
   $('gcode').value = DATA.accessCode || '';
   if (tab === 'restaurant') renderRestaurant(); else if (tab === 'people') renderPeople(); else renderOwes();
-  if (sel && ordersFor(sel).length && tab !== 'owes') $('tabbody').insertAdjacentHTML('beforeend', '<div class="row"><button class="btn" onclick="printLists(false)">🖨️ Distribution lists (PDF)</button><button class="btn" onclick="printLists(true)">🧾 Restaurant PDF (with prices)</button></div><div class="muted" style="font-size:12px;margin-top:4px">Each person\'s dishes, ' + (evById(sel).split ? 'Cast and Crew on separate pages' : 'on one page') + ', with tick boxes. <b>Distribution lists</b> has no prices, for your helpers. <b>Restaurant PDF</b> adds prices and totals. Choose <b>Save as PDF</b> in the print screen to send it.</div>');
+  if (sel && ordersFor(sel).length && tab !== 'owes') $('tabbody').insertAdjacentHTML('beforeend', '<div class="row"><button class="btn" onclick="printLists(false)">🖨️ Distribution lists (PDF)</button><button class="btn" onclick="printRestaurant()">🧾 Restaurant PDF</button></div><div class="muted" style="font-size:12px;margin-top:4px">Each person\'s dishes, ' + (evById(sel).split ? 'Cast and Crew on separate pages' : 'on one page') + ', with tick boxes. <b>Distribution lists</b> has no prices, for your helpers. <b>Restaurant PDF</b> is the dish totals with prices, Cast order then Crew order. Choose <b>Save as PDF</b> in the print screen to send it.</div>');
 }
 function pubUrl(){ return location.href.replace(/admin\.html.*$/, '').replace(/#.*$/, ''); }
 
@@ -368,6 +376,29 @@ function printLists(withPrices){
   var box = $('printArea'); if (!box) { box = document.createElement('div'); box.id = 'printArea'; document.body.appendChild(box); }
   box.innerHTML = pages.join('');
   var old = document.title; document.title = (withPrices ? 'GAOS restaurant order – ' : 'GAOS food list – ') + e.name;
+  setTimeout(function(){ window.print(); setTimeout(function(){ document.title = old; }, 1000); }, 50);
+}
+
+// ---------------------------------------------------------------- restaurant PDF: dish totals per order
+function printRestaurant(){
+  var e = evById(sel); if (!e) return;
+  var groups = e.split ? groupsFor(sel).filter(function(g){ return itemTotals(sel, g).length; }) : ['*'];
+  var names = { cast: 'COMMANDE 1 – CAST', crew: 'COMMANDE 2 – CREW', '': 'COMMANDE 3', '*': 'COMMANDE' };
+  var grand = 0;
+  var blocks = groups.map(function(g){
+    var list = g === '*' ? itemTotals(sel) : itemTotals(sel, g), sub = 0, n = 0, u = utenOf(grpOrders(g));
+    var rows = list.map(function(i){ sub += i.total; n += i.qty;
+      return '<tr><td class="r-q">' + i.qty + '</td><td class="r-id">' + (isNumId(i.id) ? esc(i.id) : '') + '</td><td>' + esc(i.name) + '</td><td class="r-n">' + chf(i.price) + '</td><td class="r-n">' + chf(i.total) + '</td></tr>'; }).join('');
+    grand += sub;
+    return '<div class="r-block"><h2>' + names[g] + '</h2><table class="r-t"><tr><th>Qté</th><th>N°</th><th>Plat</th><th class="r-n">Prix</th><th class="r-n">Total</th></tr>' + rows + '</table>' +
+      '<div class="pl-l r-sub"><span>' + n + ' plats · Baguettes : ' + u.chop + ' paires · Couverts : ' + u.cutl + '</span><span>Sous-total ' + chf(sub) + '</span></div></div>';
+  });
+  var html = '<div class="pl-page"><div class="pl-head"><h1>Commande GAOS</h1><b>Hong Sheng, Nyon</b></div>' +
+    '<div class="pl-sub">' + esc(e.name) + (e.date ? ' · ' + fmtDate(e.date) : '') + (groups.length > 1 ? ' · ' + groups.length + ' commandes séparées, livrées ensemble' : '') + '</div>' +
+    blocks.join('') + '<div class="pl-l pl-gt"><span>TOTAL</span><span>' + chf(grand) + '</span></div></div>';
+  var box = $('printArea'); if (!box) { box = document.createElement('div'); box.id = 'printArea'; document.body.appendChild(box); }
+  box.innerHTML = html;
+  var old = document.title; document.title = 'GAOS restaurant order – ' + e.name;
   setTimeout(function(){ window.print(); setTimeout(function(){ document.title = old; }, 1000); }, 50);
 }
 
