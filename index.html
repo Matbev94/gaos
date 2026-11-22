@@ -158,6 +158,11 @@ window.gaosApi = function(fn, args){
   .grp{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .grpbtn{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:14px 10px;font-weight:800;font-size:16px}
   .grpbtn span{display:block;font-size:22px;margin-bottom:2px}
+  .uten{margin-top:10px}
+  .uten .ul{display:block;font-weight:700;font-size:14px;margin-bottom:6px}
+  .uten .nums{display:grid;grid-template-columns:repeat(9,1fr);gap:5px}
+  .unum{min-width:0;height:42px;padding:0;border:1.5px solid var(--line);background:#fff;border-radius:10px;font-weight:800;font-size:15px}
+  .unum.on{border-color:var(--red);background:#fff4f2;color:var(--red);box-shadow:0 0 0 2px rgba(163,32,27,.15)}
   .grpbtn.on{border-color:var(--red);background:#fff4f2;box-shadow:0 0 0 2px rgba(163,32,27,.15)}
   .pill.grp-cast{background:#f6e3f0;color:#7a1f5c}.pill.grp-crew{background:#e2ecf8;color:#1f4a7a}
   .must{background:#fde8e6;border:1.5px solid #e6a49c;color:#7d1612;border-radius:10px;padding:10px 12px;margin-top:10px;font-size:13px}
@@ -222,6 +227,7 @@ var myOrders = [];          // orders loaded from server for this device
 var LS_KEY = 'gaos_hongsheng_orders';
 var LS_NAME = 'gaos_hongsheng_name';
 var group = '';
+var chop = null, cutl = null;  // chopsticks / cutlery sets, must be chosen (0 is fine)
 var LS_FAV = 'gaos_hongsheng_favs';
 var LS_RECENT = 'gaos_hongsheng_recent';
 var LS_RECENT_HIDDEN = 'gaos_hongsheng_recent_hidden';   // cast/crew: chosen fresh for every order, never remembered
@@ -466,10 +472,12 @@ function startEdit(id){
   editing = ref; evId = o.eveningId; cart = {};
   o.items.forEach(function(i){ if (byId(i.id)) cart[i.id] = i.qty; });
   payMethod = o.payMethod; comment = o.comment; if (o.group) group = o.group;
+  chop = (o.chopsticks === null || o.chopsticks === undefined) ? null : o.chopsticks;
+  cutl = (o.cutlery === null || o.cutlery === undefined) ? null : o.cutlery;
   lsSet(LS_NAME, o.name);
   render(); window.scrollTo({top:0, behavior:'smooth'});
 }
-function stopEdit(){ editing = null; cart = {}; payMethod = null; comment = ''; group = ''; render(); }
+function stopEdit(){ editing = null; cart = {}; payMethod = null; comment = ''; group = ''; chop = cutl = null; render(); }
 
 function showPay(id){
   var o = orderById(id); if (!o) return;
@@ -512,6 +520,10 @@ function renderReview(open){
       '<button class="grpbtn' + (group === 'cast' ? ' on' : '') + '" data-g="cast"><span>🎭</span>Cast</button>' +
       '<button class="grpbtn' + (group === 'crew' ? ' on' : '') + '" data-g="crew"><span>🔧</span>Crew</button></div>';
   }
+  function nums(k, v){ var b = ''; for (var n = 0; n <= 8; n++) b += '<button class="unum' + (v === n ? ' on' : '') + '" data-k="' + k + '" data-n="' + n + '">' + n + '</button>'; return '<div class="nums">' + b + '</div>'; }
+  h += '<label class="lbl" style="margin-top:16px">Chopsticks and cutlery <span style="text-transform:none;font-weight:500">(choose both, 0 is fine)</span></label>' +
+    '<div class="uten"><span class="ul">🥢 Pairs of chopsticks</span>' + nums('chop', chop) + '</div>' +
+    '<div class="uten"><span class="ul">🍴 Sets of cutlery</span>' + nums('cutl', cutl) + '</div>';
   h += '<label class="lbl" style="margin-top:16px">How will you pay Matt?</label><div class="nocash"><b>💳 TWINT or Revolut only. No cash.</b><br>No TWINT? Choose <b>Revolut</b>: you can pay with any bank card or Apple Pay, no Revolut account needed.</div><div class="pay">' +
     payOpt('twint', 'tw', 'TWINT', 'TWINT', 'Send to ' + D.twint) +
     payOpt('revolut', 'rv', 'Rev', 'Revolut, card or Apple Pay', 'No Revolut account needed', payBadges()) +
@@ -526,6 +538,14 @@ function renderReview(open){
   bindSteps($('sheetInner'));
   Array.prototype.forEach.call(document.querySelectorAll('.payopt'), function(b){
     b.addEventListener('click', function(){ payMethod = b.getAttribute('data-m'); markPay(); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('.unum'), function(b){
+    b.addEventListener('click', function(){
+      var k = b.getAttribute('data-k'), n = Number(b.getAttribute('data-n'));
+      if (k === 'chop') chop = n; else cutl = n;
+      var er = $('err'); if (er) er.style.display = 'none';
+      Array.prototype.forEach.call(document.querySelectorAll('.unum[data-k="' + k + '"]'), function(x){ x.classList.toggle('on', x === b); });
+    });
   });
   Array.prototype.forEach.call(document.querySelectorAll('.grpbtn'), function(b){
     b.addEventListener('click', function(){ group = b.getAttribute('data-g'); var er = $('err'); if (er) er.style.display = 'none'; Array.prototype.forEach.call(document.querySelectorAll('.grpbtn'), function(x){ x.classList.toggle('on', x === b); }); });
@@ -625,17 +645,18 @@ function submit(){
   if (!name) return showErr('Please enter your name so Matt knows whose food it is.');
   var curEv = null; D.evenings.forEach(function(e){ if (e.id === evId) curEv = e; });
   if (curEv && curEv.split && !group) return showErr('Tap Cast or Crew so your food goes in the right order.');
+  if (chop === null || cutl === null) return showErr('Choose how many chopsticks and how much cutlery you need (0 is fine).');
   if (!payMethod) return showErr('Choose how you\'ll pay.');
   if (payMethod === 'other' && !($('cmt').value || '').trim()) return showErr('Say in the note who is paying for you.');
   lsSet(LS_NAME, name);
-  var payload = { eveningId: evId, name: name, items: cartList().map(function(i){ return {id:i.id, qty:i.qty}; }), payMethod: payMethod, comment: $('cmt').value || '', group: group };
+  var payload = { eveningId: evId, name: name, items: cartList().map(function(i){ return {id:i.id, qty:i.qty}; }), payMethod: payMethod, comment: $('cmt').value || '', group: group, chopsticks: chop, cutlery: cutl };
   var btn = $('submitBtn'); btn.disabled = true; btn.textContent = 'Sending…';
   var p = editing ? call('updateOrder', editing.id, editing.key, payload) : call('submitOrder', payload);
   p.then(function(res){
     if (!editing) { var refs = lsGet(LS_KEY, []); refs.push({id: res.order.id, key: res.editKey}); lsSet(LS_KEY, refs); }
     addRecent(res.order.items);
     var o = res.order, wasEdit = !!editing, night = nightHtml(Number(o.total) || 0, true);
-    editing = null; cart = {}; comment = ''; group = '';
+    editing = null; cart = {}; comment = ''; group = ''; chop = cutl = null;
     var pm = payMethod; payMethod = null;
     openSheet('<div class="done"><div class="tick">✓</div><h2>' + (wasEdit ? 'Order updated' : 'Order placed!') + '</h2>' +
       '<div style="color:var(--muted)">' + esc(o.name) + (o.group ? ' (' + (o.group === 'cast' ? 'Cast' : 'Crew') + ')' : '') + ' · ' + o.items.map(function(i){ return i.qty + '× ' + (isNumId(i.id) ? '#' + i.id : i.name); }).join(', ') + '</div>' +

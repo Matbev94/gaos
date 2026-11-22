@@ -154,6 +154,11 @@ window.gaosApi = function(fn, args){
   .pl-box{width:18px}.pl-box span{display:inline-block;width:14px;height:14px;border:1.5px solid #000;border-radius:3px;margin-top:2px}
   .pl-name{font-weight:700;width:32%}
   .pl-n{color:#555;font-size:10pt;font-style:italic}
+  .pl-l{display:flex;justify-content:space-between;gap:10px}
+  .pl-l > span:last-child{white-space:nowrap}
+  .pl-pt{border-top:1px dotted #999;margin-top:2px;padding-top:2px;font-weight:700}
+  .pl-gt{font-size:13pt;font-weight:800;border-top:2.5px solid #000;margin-top:6px;padding:4px 4px 0}
+  .pl-u{font-weight:400;font-size:10pt;color:#333;margin-top:2px}
   .pl-foot{margin-top:8px;font-size:10pt;color:#444}
 </style>
 </head>
@@ -262,7 +267,7 @@ function render(){
   $('pub').textContent = pubUrl();
   $('gcode').value = DATA.accessCode || '';
   if (tab === 'restaurant') renderRestaurant(); else if (tab === 'people') renderPeople(); else renderOwes();
-  if (sel && ordersFor(sel).length && tab !== 'owes') $('tabbody').insertAdjacentHTML('beforeend', '<div class="row"><button class="btn" onclick="printLists()">🖨️ Distribution lists (PDF)</button></div><div class="muted" style="font-size:12px;margin-top:4px">Each person\'s dishes, ' + (evById(sel).split ? 'Cast and Crew on separate pages' : 'on one page') + ', with tick boxes. Choose <b>Save as PDF</b> in the print screen to send it.</div>');
+  if (sel && ordersFor(sel).length && tab !== 'owes') $('tabbody').insertAdjacentHTML('beforeend', '<div class="row"><button class="btn" onclick="printLists(false)">🖨️ Distribution lists (PDF)</button><button class="btn" onclick="printLists(true)">🧾 With prices (PDF)</button></div><div class="muted" style="font-size:12px;margin-top:4px">Each person\'s dishes, ' + (evById(sel).split ? 'Cast and Crew on separate pages' : 'on one page') + ', with tick boxes. <b>Distribution lists</b> has no prices (for helpers); <b>With prices</b> adds prices and totals. Choose <b>Save as PDF</b> in the print screen to send it.</div>');
 }
 function pubUrl(){ return location.href.replace(/admin\.html.*$/, '').replace(/#.*$/, ''); }
 
@@ -306,11 +311,11 @@ function renderRestaurant(){
       var list = itemTotals(sel, g);
       var sub = list.reduce(function(a, i){ return a + i.total; }, 0);
       h += '<div class="card" style="padding:10px 10px 6px"><h4 class="gh"><span>' + GLABEL[g] + '</span><span>' + chf(sub) + '</span></h4>' +
-        (list.length ? itemTable(list) : '<div class="muted" style="padding:6px 4px 10px">Nothing yet.</div>') +
+        (list.length ? itemTable(list) + '<div class="muted" style="padding:4px 4px 8px">' + utenText(utenOf(grpOrders(g))) + '</div>' : '<div class="muted" style="padding:6px 4px 10px">Nothing yet.</div>') +
         (g === '' ? '<div class="muted" style="font-size:12px;padding:6px 4px">Orders added without cast/crew. Edit them in People to assign.</div>' : '') + '</div>';
     });
   } else {
-    h += '<div class="card" style="padding:6px 10px">' + itemTable(all) + '</div>';
+    h += '<div class="card" style="padding:6px 10px">' + itemTable(all) + '<div class="muted" style="padding:4px 4px 8px">' + utenText(utenOf(ordersFor(sel))) + '</div></div>';
   }
   h += '<div class="row"><button class="btn red" onclick="copyText(restaurantText(' + split + '))">📋 Copy order for the restaurant</button></div>';
   $('tabbody').innerHTML = h;
@@ -319,43 +324,56 @@ function restaurantText(split){
   var e = evById(sel);
   function lines(list){ return list.map(function(i){ return i.qty + ' × ' + (isNumId(i.id) ? 'n° ' + i.id + ' – ' : '') + i.name; }).join('\n'); }
   function sum(list){ return list.reduce(function(a, i){ return a + i.total; }, 0); }
+  function ut(g){ var u = utenOf(grpOrders(g)); return '\nBaguettes : ' + u.chop + ' paires · Couverts : ' + u.cutl; }
   var head = 'Commande GAOS – ' + (e ? e.name + (e.date ? ' (' + fmtDate(e.date) + ')' : '') : '');
-  if (!split) { var l = itemTotals(sel); return head + '\n' + lines(l) + '\n\nTotal: ' + chf(sum(l)); }
+  if (!split) { var l = itemTotals(sel); return head + '\n' + lines(l) + '\n' + ut('*') + '\n\nTotal: ' + chf(sum(l)); }
   var names = { cast: 'COMMANDE 1 – CAST', crew: 'COMMANDE 2 – CREW', '': 'COMMANDE 3' };
-  var parts = groupsFor(sel).map(function(g){ var l = itemTotals(sel, g); return l.length ? names[g] + '\n' + lines(l) + '\nSous-total: ' + chf(sum(l)) : ''; }).filter(Boolean);
+  var parts = groupsFor(sel).map(function(g){ var l = itemTotals(sel, g); return l.length ? names[g] + '\n' + lines(l) + ut(g) + '\nSous-total: ' + chf(sum(l)) : ''; }).filter(Boolean);
   return head + '\n(2 commandes séparées, livrées ensemble)\n\n' + parts.join('\n\n') + '\n\nTotal: ' + chf(sum(itemTotals(sel)));
 }
 
 // ---------------------------------------------------------------- printable distribution lists
-function printLists(){
+function printLists(withPrices){
   var e = evById(sel); if (!e) return;
-  var groups = e.split ? groupsFor(sel) : ['*'];
-  var pages = groups.map(function(g){
+  var groups = e.split ? groupsFor(sel).filter(function(g){ return grpOrders(g).length; }) : ['*'];
+  var grand = 0, lastIdx = groups.length - 1, grandAll = ordersFor(sel).reduce(function(a, o){ return a + (Number(o.total) || 0); }, 0);
+  var pages = groups.map(function(g, idx){
     var map = {};
     ordersFor(sel).forEach(function(o){
       if (g !== '*' && (o.group || '') !== g) return;
       var k = key(o.name);
-      if (!map[k]) map[k] = { name: o.name, items: {}, order: [], notes: [] };
-      o.items.forEach(function(i){ var ik = i.id + '|' + i.name; if (!map[k].items[ik]) { map[k].items[ik] = { id: i.id, name: i.name, qty: 0 }; map[k].order.push(ik); } map[k].items[ik].qty += i.qty; });
+      if (!map[k]) map[k] = { name: o.name, items: {}, order: [], notes: [], orders: [], total: 0 };
+      map[k].orders.push(o); map[k].total += Number(o.total) || 0;
+      o.items.forEach(function(i){ var ik = i.id + '|' + i.name; if (!map[k].items[ik]) { map[k].items[ik] = { id: i.id, name: i.name, qty: 0, price: Number(i.price) || 0 }; map[k].order.push(ik); } map[k].items[ik].qty += i.qty; });
       if (o.comment) map[k].notes.push(o.comment);
     });
     var ps = Object.keys(map).map(function(k){ return map[k]; }).sort(function(a, b){ return a.name.localeCompare(b.name); });
     if (!ps.length) return '';
-    var dishes = 0;
+    var dishes = 0, sub = 0, gu = { chop: 0, cutl: 0 };
     var rows = ps.map(function(p){
-      var lines = p.order.map(function(ik){ var i = p.items[ik]; dishes += i.qty; return i.qty + ' × ' + (isNumId(i.id) ? '<b>' + esc(i.id) + '</b> ' : '') + esc(i.name); });
-      return '<tr><td class="pl-box"><span></span></td><td class="pl-name">' + esc(p.name) + '</td><td>' + lines.join('<br>') + (p.notes.length ? '<div class="pl-n">' + p.notes.map(esc).join(' · ') + '</div>' : '') + '</td></tr>';
+      var u = utenOf(p.orders); gu.chop += u.chop; gu.cutl += u.cutl; sub += p.total;
+      var lines = p.order.map(function(ik){ var i = p.items[ik]; dishes += i.qty; return '<div class="pl-l"><span>' + i.qty + ' × ' + (isNumId(i.id) ? '<b>' + esc(i.id) + '</b> ' : '') + esc(i.name) + '</span>' + (withPrices ? '<span>' + chf(i.qty * i.price) + '</span>' : '') + '</div>'; });
+      return '<tr><td class="pl-box"><span></span></td><td class="pl-name">' + esc(p.name) + (u.missing === p.orders.length ? '' : '<div class="pl-u">🥢 ' + u.chop + ' · 🍴 ' + u.cutl + '</div>') + '</td><td>' + lines.join('') +
+        (withPrices ? '<div class="pl-l pl-pt"><span>Total</span><span>' + chf(p.total) + '</span></div>' : '') +
+        (p.notes.length ? '<div class="pl-n">' + p.notes.map(esc).join(' · ') + '</div>' : '') + '</td></tr>';
     }).join('');
+    grand += sub;
     var title = g === '*' ? 'Orders' : g === 'cast' ? '🎭 CAST' : g === 'crew' ? '🔧 CREW' : 'Not assigned';
     return '<div class="pl-page"><div class="pl-head"><h1>' + title + '</h1><b>GAOS × Hong Sheng</b></div>' +
-      '<div class="pl-sub">' + esc(e.name) + (e.date ? ' · ' + fmtDate(e.date) : '') + ' · ' + ps.length + ' people · ' + dishes + ' dishes</div>' +
-      '<table class="pl-t">' + rows + '</table><div class="pl-foot">Tick each person off as you hand over their food.</div></div>';
+      '<div class="pl-sub">' + esc(e.name) + (e.date ? ' · ' + fmtDate(e.date) : '') + ' · ' + ps.length + ' people · ' + dishes + ' dishes · 🥢 ' + gu.chop + ' chopsticks · 🍴 ' + gu.cutl + ' cutlery</div>' +
+      '<table class="pl-t">' + rows + '</table>' +
+      (withPrices ? '<div class="pl-l pl-gt"><span>' + (g === '*' ? 'Total' : title.replace(/^\S+ /, '') + ' total') + '</span><span>' + chf(sub) + '</span></div>' + (g !== '*' && groups.length > 1 && idx === lastIdx ? '<div class="pl-l pl-gt"><span>Grand total (all orders)</span><span>' + chf(grandAll) + '</span></div>' : '') : '') +
+      '<div class="pl-foot">Tick each person off as you hand over their food.</div></div>';
   }).filter(Boolean);
   var box = $('printArea'); if (!box) { box = document.createElement('div'); box.id = 'printArea'; document.body.appendChild(box); }
   box.innerHTML = pages.join('');
-  var old = document.title; document.title = 'GAOS food list – ' + e.name;
+  var old = document.title; document.title = (withPrices ? 'GAOS orders with prices – ' : 'GAOS food list – ') + e.name;
   setTimeout(function(){ window.print(); setTimeout(function(){ document.title = old; }, 1000); }, 50);
 }
+
+function utenOf(orders){ var r = { chop: 0, cutl: 0, missing: 0 }; orders.forEach(function(o){ if (o.chopsticks === null || o.chopsticks === undefined) r.missing++; r.chop += Number(o.chopsticks) || 0; r.cutl += Number(o.cutlery) || 0; }); return r; }
+function utenText(u){ return '🥢 ' + u.chop + ' chopsticks · 🍴 ' + u.cutl + ' cutlery'; }
+function grpOrders(g){ return ordersFor(sel).filter(function(o){ return g === '*' || (o.group || '') === g; }); }
 
 function people(evId){
   var map = {};
@@ -384,7 +402,7 @@ function renderPeople(){
     h += '<div class="person ' + (p.state === 'paid' ? 'paid' : '') + '"><div class="phead">' +
       '<button class="chk ' + (p.state === 'paid' ? 'on' : p.state === 'part' ? 'part' : '') + '" title="Mark paid" onclick=\'setPaid(' + JSON.stringify(ids) + ',' + (p.state !== 'paid') + ',this)\'>' + (p.state === 'paid' ? '✓' : p.state === 'part' ? '½' : '') + '</button>' +
       '<div class="grow"><div class="pname">' + esc(p.name) + Object.keys(grps).map(function(g){ return '<span class="gp ' + g + '">' + (g === 'cast' ? 'CAST' : 'CREW') + '</span>'; }).join('') + Object.keys(methods).map(function(m){ return '<span class="pm ' + m + '">' + pmLabel(m) + '</span>'; }).join('') + '</div>' +
-      '<div class="pmeta">' + (p.state === 'paid' ? 'Paid' : p.state === 'part' ? 'Part paid · owes ' + chf(p.total - p.paidAmt) : 'Not paid') + (p.claimed ? ' · <b style="color:#1f4a7a">🔔 says they\'ve paid</b>' : '') + '</div></div>' +
+      '<div class="pmeta">' + (p.state === 'paid' ? 'Paid' : p.state === 'part' ? 'Part paid · owes ' + chf(p.total - p.paidAmt) : 'Not paid') + (p.claimed ? ' · <b style="color:#1f4a7a">🔔 says they\'ve paid</b>' : '') + (function(u){ return u.missing === p.orders.length ? '' : ' · 🥢 ' + u.chop + ' · 🍴 ' + u.cutl; })(utenOf(p.orders)) + '</div></div>' +
       '<div class="ptot">' + chf(p.total) + '</div></div><div class="pbody">';
     p.orders.forEach(function(o){
       if (p.orders.length > 1) h += '<div class="ordhdr"><span>Order ' + fmtTime(o.created) + ' · ' + chf(o.total) + (o.paid ? ' ✓' : '') + '</span></div>';
