@@ -137,6 +137,24 @@ window.gaosApi = function(fn, args){
   .claim{padding:10px 0;border-top:1px solid #dbe5f2}
   .claim:first-of-type{border-top:0}
   .sharelink{background:#f7f1e7;border-radius:10px;padding:10px;font-size:13px;word-break:break-all}
+  #printArea{display:none}
+  @media print{
+    body > *:not(#printArea){display:none !important}
+    #printArea{display:block;color:#000;font:12pt/1.35 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    @page{margin:14mm}
+  }
+  .pl-page{break-after:page;page-break-after:always}
+  .pl-page:last-child{break-after:auto;page-break-after:auto}
+  .pl-head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2.5px solid #000;padding-bottom:4px;margin-bottom:6px}
+  .pl-head h1{font-size:22pt;margin:0}
+  .pl-sub{font-size:10pt;color:#444;margin-bottom:8px}
+  .pl-t{width:100%;border-collapse:collapse}
+  .pl-t td{border-bottom:1px solid #bbb;padding:6px 4px;vertical-align:top}
+  .pl-t tr{break-inside:avoid;page-break-inside:avoid}
+  .pl-box{width:18px}.pl-box span{display:inline-block;width:14px;height:14px;border:1.5px solid #000;border-radius:3px;margin-top:2px}
+  .pl-name{font-weight:700;width:32%}
+  .pl-n{color:#555;font-size:10pt;font-style:italic}
+  .pl-foot{margin-top:8px;font-size:10pt;color:#444}
 </style>
 </head>
 <body>
@@ -244,6 +262,7 @@ function render(){
   $('pub').textContent = pubUrl();
   $('gcode').value = DATA.accessCode || '';
   if (tab === 'restaurant') renderRestaurant(); else if (tab === 'people') renderPeople(); else renderOwes();
+  if (sel && ordersFor(sel).length && tab !== 'owes') $('tabbody').insertAdjacentHTML('beforeend', '<div class="row"><button class="btn" onclick="printLists()">🖨️ Distribution lists (PDF)</button></div><div class="muted" style="font-size:12px;margin-top:4px">Each person\'s dishes, ' + (evById(sel).split ? 'Cast and Crew on separate pages' : 'on one page') + ', with tick boxes. Choose <b>Save as PDF</b> in the print screen to send it.</div>');
 }
 function pubUrl(){ return location.href.replace(/admin\.html.*$/, '').replace(/#.*$/, ''); }
 
@@ -305,6 +324,37 @@ function restaurantText(split){
   var names = { cast: 'COMMANDE 1 – CAST', crew: 'COMMANDE 2 – CREW', '': 'COMMANDE 3' };
   var parts = groupsFor(sel).map(function(g){ var l = itemTotals(sel, g); return l.length ? names[g] + '\n' + lines(l) + '\nSous-total: ' + chf(sum(l)) : ''; }).filter(Boolean);
   return head + '\n(2 commandes séparées, livrées ensemble)\n\n' + parts.join('\n\n') + '\n\nTotal: ' + chf(sum(itemTotals(sel)));
+}
+
+// ---------------------------------------------------------------- printable distribution lists
+function printLists(){
+  var e = evById(sel); if (!e) return;
+  var groups = e.split ? groupsFor(sel) : ['*'];
+  var pages = groups.map(function(g){
+    var map = {};
+    ordersFor(sel).forEach(function(o){
+      if (g !== '*' && (o.group || '') !== g) return;
+      var k = key(o.name);
+      if (!map[k]) map[k] = { name: o.name, items: {}, order: [], notes: [] };
+      o.items.forEach(function(i){ var ik = i.id + '|' + i.name; if (!map[k].items[ik]) { map[k].items[ik] = { id: i.id, name: i.name, qty: 0 }; map[k].order.push(ik); } map[k].items[ik].qty += i.qty; });
+      if (o.comment) map[k].notes.push(o.comment);
+    });
+    var ps = Object.keys(map).map(function(k){ return map[k]; }).sort(function(a, b){ return a.name.localeCompare(b.name); });
+    if (!ps.length) return '';
+    var dishes = 0;
+    var rows = ps.map(function(p){
+      var lines = p.order.map(function(ik){ var i = p.items[ik]; dishes += i.qty; return i.qty + ' × ' + (isNumId(i.id) ? '<b>' + esc(i.id) + '</b> ' : '') + esc(i.name); });
+      return '<tr><td class="pl-box"><span></span></td><td class="pl-name">' + esc(p.name) + '</td><td>' + lines.join('<br>') + (p.notes.length ? '<div class="pl-n">' + p.notes.map(esc).join(' · ') + '</div>' : '') + '</td></tr>';
+    }).join('');
+    var title = g === '*' ? 'Orders' : g === 'cast' ? '🎭 CAST' : g === 'crew' ? '🔧 CREW' : 'Not assigned';
+    return '<div class="pl-page"><div class="pl-head"><h1>' + title + '</h1><b>GAOS × Hong Sheng</b></div>' +
+      '<div class="pl-sub">' + esc(e.name) + (e.date ? ' · ' + fmtDate(e.date) : '') + ' · ' + ps.length + ' people · ' + dishes + ' dishes</div>' +
+      '<table class="pl-t">' + rows + '</table><div class="pl-foot">Tick each person off as you hand over their food.</div></div>';
+  }).filter(Boolean);
+  var box = $('printArea'); if (!box) { box = document.createElement('div'); box.id = 'printArea'; document.body.appendChild(box); }
+  box.innerHTML = pages.join('');
+  var old = document.title; document.title = 'GAOS food list – ' + e.name;
+  setTimeout(function(){ window.print(); setTimeout(function(){ document.title = old; }, 1000); }, 50);
 }
 
 function people(evId){
