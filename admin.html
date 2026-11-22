@@ -267,7 +267,7 @@ function render(){
   $('pub').textContent = pubUrl();
   $('gcode').value = DATA.accessCode || '';
   if (tab === 'restaurant') renderRestaurant(); else if (tab === 'people') renderPeople(); else renderOwes();
-  if (sel && ordersFor(sel).length && tab !== 'owes') $('tabbody').insertAdjacentHTML('beforeend', '<div class="row"><button class="btn" onclick="printLists(false)">🖨️ Distribution lists (PDF)</button><button class="btn" onclick="printLists(true)">🧾 With prices (PDF)</button></div><div class="muted" style="font-size:12px;margin-top:4px">Each person\'s dishes, ' + (evById(sel).split ? 'Cast and Crew on separate pages' : 'on one page') + ', with tick boxes. <b>Distribution lists</b> has no prices (for helpers); <b>With prices</b> adds prices and totals. Choose <b>Save as PDF</b> in the print screen to send it.</div>');
+  if (sel && ordersFor(sel).length && tab !== 'owes') $('tabbody').insertAdjacentHTML('beforeend', '<div class="row"><button class="btn" onclick="printLists(false)">🖨️ Distribution lists (PDF)</button><button class="btn" onclick="printLists(true)">🧾 Restaurant PDF (with prices)</button></div><div class="muted" style="font-size:12px;margin-top:4px">Each person\'s dishes, ' + (evById(sel).split ? 'Cast and Crew on separate pages' : 'on one page') + ', with tick boxes. <b>Distribution lists</b> has no prices, for your helpers. <b>Restaurant PDF</b> adds prices and totals. Choose <b>Save as PDF</b> in the print screen to send it.</div>');
 }
 function pubUrl(){ return location.href.replace(/admin\.html.*$/, '').replace(/#.*$/, ''); }
 
@@ -367,7 +367,7 @@ function printLists(withPrices){
   }).filter(Boolean);
   var box = $('printArea'); if (!box) { box = document.createElement('div'); box.id = 'printArea'; document.body.appendChild(box); }
   box.innerHTML = pages.join('');
-  var old = document.title; document.title = (withPrices ? 'GAOS orders with prices – ' : 'GAOS food list – ') + e.name;
+  var old = document.title; document.title = (withPrices ? 'GAOS restaurant order – ' : 'GAOS food list – ') + e.name;
   setTimeout(function(){ window.print(); setTimeout(function(){ document.title = old; }, 1000); }, 50);
 }
 
