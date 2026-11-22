@@ -383,7 +383,7 @@ function printLists(withPrices){
 function printRestaurant(){
   var e = evById(sel); if (!e) return;
   var groups = e.split ? groupsFor(sel).filter(function(g){ return itemTotals(sel, g).length; }) : ['*'];
-  var names = { cast: 'COMMANDE 1 – CAST', crew: 'COMMANDE 2 – CREW', '': 'COMMANDE 3', '*': 'COMMANDE' };
+  var names = { cast: '🎭 COMMANDE 1 – CAST', crew: '🔧 COMMANDE 2 – CREW', '': '❓ COMMANDE 3', '*': '🥡 COMMANDE' };
   var grand = 0;
   var blocks = groups.map(function(g){
     var list = g === '*' ? itemTotals(sel) : itemTotals(sel, g), sub = 0, n = 0, u = utenOf(grpOrders(g));
@@ -391,11 +391,11 @@ function printRestaurant(){
       return '<tr><td class="r-q">' + i.qty + '</td><td class="r-id">' + (isNumId(i.id) ? esc(i.id) : '') + '</td><td>' + esc(i.name) + '</td><td class="r-n">' + chf(i.price) + '</td><td class="r-n">' + chf(i.total) + '</td></tr>'; }).join('');
     grand += sub;
     return '<div class="r-block"><h2>' + names[g] + '</h2><table class="r-t"><tr><th>Qté</th><th>N°</th><th>Plat</th><th class="r-n">Prix</th><th class="r-n">Total</th></tr>' + rows + '</table>' +
-      '<div class="pl-l r-sub"><span>' + n + ' plats · Baguettes : ' + u.chop + ' paires · Couverts : ' + u.cutl + '</span><span>Sous-total ' + chf(sub) + '</span></div></div>';
+      '<div class="pl-l r-sub"><span>🍽️ ' + n + ' plats · 🥢 Baguettes : ' + u.chop + ' paires · 🍴 Couverts : ' + u.cutl + '</span><span>Sous-total ' + chf(sub) + '</span></div></div>';
   });
-  var html = '<div class="pl-page"><div class="pl-head"><h1>Commande GAOS</h1><b>Hong Sheng, Nyon</b></div>' +
+  var html = '<div class="pl-page"><div class="pl-head"><h1>🥡 Commande GAOS</h1><b>Hong Sheng, Nyon</b></div>' +
     '<div class="pl-sub">' + esc(e.name) + (e.date ? ' · ' + fmtDate(e.date) : '') + (groups.length > 1 ? ' · ' + groups.length + ' commandes séparées, livrées ensemble' : '') + '</div>' +
-    blocks.join('') + '<div class="pl-l pl-gt"><span>TOTAL</span><span>' + chf(grand) + '</span></div></div>';
+    blocks.join('') + '<div class="pl-l pl-gt"><span>💰 TOTAL</span><span>' + chf(grand) + '</span></div></div>';
   var box = $('printArea'); if (!box) { box = document.createElement('div'); box.id = 'printArea'; document.body.appendChild(box); }
   box.innerHTML = html;
   var old = document.title; document.title = 'GAOS restaurant order – ' + e.name;
